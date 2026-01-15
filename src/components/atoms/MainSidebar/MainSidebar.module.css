@@ -1,0 +1,36 @@
+.sidebar {
+	position: sticky;
+	top: 5rem;
+	height: max-content;
+	display: flex;
+	flex-direction: column;
+	justify-content: space-around;
+	gap: 10rem;
+	width: var(--sidebar-width);
+	padding: 3rem;
+	background-color: var(--mui-palette-common-background);
+	border-radius: 10px;
+
+	@media (max-width: 1000px) {
+		width: var(--sidebar-width-sm);
+	}
+}
+
+.content {
+	display: flex;
+	flex-direction: column;
+	gap: 1.5rem;
+}
+
+.accountButton {
+	width: 100%;
+	color: inherit;
+}
+
+.center {
+	align-items: center;
+}
+
+.divider {
+	width: 100%;
+}

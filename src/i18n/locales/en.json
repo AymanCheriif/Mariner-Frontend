@@ -1,0 +1,177 @@
+{
+	"common": {
+		"home": "Home",
+		"edit": "Edit",
+		"login": "Login",
+		"continue": "Continue",
+		"logout": "Logout",
+		"report": "Report",
+		"account": "Account",
+		"addShip": "Add Ship",
+		"updateShip": "Update Ship",
+		"addOurShip": "Add Our Ship",
+		"addAgentShip": "Add Other Agent Ship",
+		"addFleet": "Add Fleet",
+		"addCargaison": "Add Cargaison(s)",
+		"cargaison": "Cargaison",
+		"shipowner": "Shipowner",
+		"operationDepart": "Operation Depart",
+		"chartingDepart": "Charting Depart.",
+		"documentation": "Documentation",
+		"documents": "Documents",
+		"remarksAndFacts": "Remarks and Facts",
+		"performanceRate": "Performance Rate",
+		"ship": "Ship",
+		"charter": "Charter",
+		"receiver": "Receiver",
+		"upload": "Upload",
+		"submit": "Submit",
+		"address": "Address",
+		"manageUsers": "Manage Users",
+		"addUser": "Add User",
+		"editUser": "Edit User",
+		"reset": "Reset",
+		"exportData": "Export data",
+		"shipReportExportFilename": "mariner-ships-report",
+		"delete": "Delete",
+		"actions": "Actions",
+		"cancel": "Cancel",
+		"loading": "Loading...",
+		"error": "Error",
+		"back": "Back",
+		"update": "Update",
+		"updateCargaison": "Update Cargaison",
+		"fournisseur": "Fournisseur",
+		"exportPdf": "Export PDF",
+		"exportCsv": "Export CSV",
+		"all": "All",
+		"shipStatus": "Ship Status",
+		"inPort": "In Port",
+		"departed": "Departed",
+		"fleetsReport": "Fleets",
+		"search": "Search...",
+		"noOptions": "No options",
+		"clear": "Clear",
+		"open": "Open",
+		"close": "Close"
+	},
+	"pages": {
+		"login": {
+			"subtitle": "Welcome back. Enter your credentials to access your account"
+		}
+	},
+	"form": {
+		"email": {
+			"label": "Email",
+			"address": "Email Address"
+		},
+		"password": {
+			"label": "Password",
+			"error": "Please enter correct password",
+			"forgot": "Forgot Password"
+		},
+		"keepSignedIn": "Keep me signed in",
+		"shipName": {
+			"label": "Ship Name"
+		},
+		"shipImo": {
+			"label": "Ship IMO"
+		},
+		"dwt": {
+			"label": "DWT",
+			"from": "DWT From",
+			"to": "DWT To"
+		},
+		"shipType": {
+			"label": "Ship Type"
+		},
+		"boardingPort": {
+			"label": "Chartering / Discharging Port"
+		},
+		"BerthingDate": {
+			"label": "Berthing Date"
+		},
+		"completionDate": {
+			"label": "Completion Date"
+		},
+		"shipStatus": {
+			"label": "Ship Status"
+		},
+		"provenance": {
+			"label": "Provenance"
+		},
+		"name": {
+			"label": "Name"
+		},
+		"phoneNumber": {
+			"label": "Phone Number"
+		},
+		"whatsAppNumber": {
+			"label": "WhatsApp N°.."
+		},
+		"weChatNumber": {
+			"label": "Wechat N° .."
+		},
+		"yourNotes": {
+			"label": "Your Notes..."
+		},
+		"agent": {
+			"label": "Agent"
+		},
+		"performanceRateFunction": "Fonction : ((input.Completion_Date - input.Berthing_Date)) / (1000 * 60 * 60 * 24)",
+		"tonnage": {
+			"label": "Tonnage"
+		},
+		"mic": {
+			"label": "MIC (Men in Charge)"
+		},
+		"phoneFixe": {
+			"label": "Phone Fixe"
+		},
+		"phoneMobile": {
+			"label": "Phone Mobile"
+		},
+		"receiverName": {
+			"label": "Receiver Name"
+		},
+		"receiverEmail": {
+			"label": "Receiver Email"
+		},
+		"fournisseurName": {
+			"label": "Fournisseur Name"
+		},
+		"fournisseurEmail": {
+			"label": "Fournisseur Email"
+		},
+		"shipDocuments": {
+			"label": "Ship Documents"
+		},
+		"charterDocuments": {
+			"label": "Charter Documents"
+		},
+		"receiverDocuments": {
+			"label": "Receiver Documents"
+		},
+		"firstName": {
+			"label": "FirstName"
+		},
+		"lastName": {
+			"label": "Last Name"
+		},
+		"role": {
+			"label": "Role"
+		},
+		"category": {
+			"label": "Category"
+		},
+		"subCategory": {
+			"label": "SubCategory"
+		},
+		"address": {
+			"label": "Address"
+		},
+		"files": {
+			"label": "Files"
+		}
+	}
+}

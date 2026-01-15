@@ -1,0 +1,45 @@
+.row {
+	display: flex;
+	align-items: center;
+	gap: 1rem;
+}
+
+.wrap {
+	flex-wrap: wrap;
+}
+
+.documentationTitle {
+	width: 6rem;
+	font-weight: 700;
+	color: var(--mui-palette-primary-dark);
+}
+
+/* New: preview grid container */
+.previewContainer {
+	display: flex;
+	flex-direction: row;
+	flex-wrap: wrap;
+	gap: 10px;
+	align-items: center;
+}
+
+/* New: per-image wrapper */
+.previewItem {
+	position: relative;
+	display: inline-block;
+}
+
+/* New: overlay for deleting state */
+.deletingOverlay {
+	position: absolute;
+	top: 0;
+	left: 0;
+	right: 0;
+	bottom: 0;
+	background: rgba(255, 255, 255, 0.6);
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	z-index: 2;
+	border-radius: 2px;
+}

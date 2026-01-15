@@ -1,0 +1,23 @@
+.header {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+}
+
+.logo {
+	margin-left: calc(var(--sidebar-width) / 2);
+	transform: translateX(-50%);
+	width: 150px;
+	height: auto;
+
+	@media (max-width: 1000px) {
+		margin-left: calc(var(--sidebar-width-sm) / 2);
+	}
+}
+
+.headerActions {
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	gap: 2rem;
+}

@@ -1,0 +1,44 @@
+.wrapper {
+	display: flex;
+	gap: 4rem;
+	height: 100%;
+}
+
+.usersTable {
+	flex: 2;
+	height: 98%;
+}
+
+.usersTableContainer {
+	height: 100%;
+}
+
+.createUserForm {
+	flex: 1;
+}
+
+.container {
+	display: flex;
+	flex-direction: column;
+	gap: 1rem;
+}
+
+.row {
+	display: flex;
+	align-items: flex-start;
+	gap: 1rem;
+}
+
+.input {
+	width: 100%;
+	flex: 1;
+}
+
+.error {
+	border: 1px solid red;
+}
+
+.soloRow > div {
+	flex: 0.25;
+	padding-right: 3rem;
+}

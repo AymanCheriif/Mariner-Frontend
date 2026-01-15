@@ -1,0 +1,18 @@
+.container {
+	display: flex;
+	flex-direction: column;
+	gap: 2px;
+	flex: 1;
+}
+
+.label {
+	font-weight: 700;
+}
+
+.input {
+	width: 100%;
+}
+
+.error {
+	color: var(--mui-palette-error-main);
+}

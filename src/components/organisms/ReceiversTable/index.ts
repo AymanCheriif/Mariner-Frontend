@@ -1,0 +1,1 @@
+export { ReceiversTable } from './ReceiversTable';

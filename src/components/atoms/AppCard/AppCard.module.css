@@ -1,0 +1,30 @@
+.container {
+	width: 100%;
+	padding: 1rem 1.5rem;
+	background-color: var(--mui-palette-common-background);
+	border-radius: 10px;
+	margin-bottom: 0.75rem;
+}
+
+.header {
+	display: flex;
+	align-items: center;
+	gap: 0.6rem;
+	border-bottom: 1px solid var(--mui-palette-grey-300);
+	padding-bottom: 0.75rem;
+	margin-bottom: 1rem;
+}
+
+.title {
+	font-weight: 700;
+}
+
+.contentContainer {
+	display: flex;
+	flex-direction: column;
+	gap: 1rem;
+}
+
+.error {
+	border: 1px solid red;
+}

@@ -1,0 +1,1 @@
+export { DocumentImage } from './DocumentImage';

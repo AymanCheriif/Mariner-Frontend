@@ -1,0 +1,26 @@
+.avatarContainer {
+	display: flex;
+	align-items: center;
+	gap: 0.75rem;
+	min-width: 100px;
+}
+
+.avatar {
+	width: 3.75rem;
+	aspect-ratio: 1;
+	border-radius: 50%;
+	background-color: #f6ddd8;
+	display: grid;
+	place-items: center;
+}
+
+.icon {
+	width: 2rem;
+	height: 2rem;
+}
+
+.logoutButton {
+	width: 100%;
+	color: inherit;
+	justify-content: flex-start;
+}

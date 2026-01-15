@@ -1,0 +1,38 @@
+.selectedFile {
+	display: flex;
+	align-items: center;
+	gap: 0.5rem;
+	background-color: var(--mui-palette-primary-main);
+	color: var(--mui-palette-common-white);
+	padding: 0.25rem 0.5rem;
+	border-radius: 0.25rem;
+	user-select: none;
+}
+
+.error {
+	background-color: var(--mui-palette-error-main);
+
+	.iconButton:hover {
+		background-color: var(--mui-palette-error-light);
+	}
+}
+
+.errorMessage {
+	color: var(--mui-palette-error-dark);
+}
+
+.iconButton {
+	background-color: var(--mui-palette-common-white);
+	padding: 0.25rem;
+
+	&:hover {
+		background-color: var(--mui-palette-primary-dark);
+		svg {
+			color: #fff;
+		}
+	}
+}
+
+.uploadIcon {
+	margin: 0 !important;
+}

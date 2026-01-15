@@ -1,0 +1,21 @@
+.row {
+	display: flex;
+	align-items: flex-start;
+	gap: 1rem;
+	flex-wrap: wrap;
+}
+
+.input {
+	width: 100%;
+	flex: 1;
+	min-width: 200px;
+}
+
+.error {
+	border: 1px solid red;
+}
+
+.soloRow > div {
+	flex: 0.25;
+	padding-right: 3rem;
+}
