@@ -52,7 +52,6 @@ export interface ShipDTO {
 	performanceRate: string;
 
 	berthingDate: string;
-	completionDate: string;
 
 	shipOwner: Nullable<ShipPersonnelContactDTO>;
 	operationDepart: Nullable<ShipPersonnelContactDTO>;
@@ -86,7 +85,6 @@ export interface CargoDetailsDTO {
 	shipName: string;
 	shipImo: string;
 	boardingPort: string;
-	completionDate: string;
 	category: string;
 	subCategory: string;
 	tonnage: string;

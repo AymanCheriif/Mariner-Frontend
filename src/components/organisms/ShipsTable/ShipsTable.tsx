@@ -1,5 +1,5 @@
 import { Box, Modal, IconButton, Autocomplete, TextField, Button, ButtonGroup } from '@mui/material';
-import { ColDef, IDateFilterParams } from 'ag-grid-community';
+import { ColDef } from 'ag-grid-community';
 import 'ag-grid-community/styles/ag-grid.css';
 import 'ag-grid-community/styles/ag-theme-quartz.css';
 import { AgGridReact, CustomCellRendererProps } from 'ag-grid-react';
@@ -9,6 +9,7 @@ import { AppButton, DocumentViewer } from '~components/atoms';
 import { classes } from '~helpers';
 import { CONSTANTS } from '~helpers/constants';
 import { useTranslation } from '~i18n';
+import { API_BASE_URL } from '~services/urls';
 import { addShipService } from '~services/addShip';
 import { ShipDTO } from '~services/addShip/types';
 import styles from './ShipsTable.module.css';
@@ -35,12 +36,11 @@ interface ShipRow {
 	imo: string;
 	dwt: string;
 	boardingPort: string;
-	completionDate: string;
 	agent: string;
+	berthingDate?: string;
 	shipDocuments: string[];
 	charterDocuments: string[];
 	receiverDocuments: string[];
-	cargoType?: string;
 	cargoCategory?: string;
 }
 
@@ -50,39 +50,16 @@ const mapShipDtoToShipRow = (dto: ShipDTO): ShipRow => {
 		imo: dto.imo,
 		dwt: dto.dwt,
 		boardingPort: dto.boardingPort,
-		completionDate: dto.completionDate,
 		agent: dto.agent || 'NAVLION',
+		berthingDate: dto.berthingDate,
 		shipDocuments: dto.shipDocuments,
 		charterDocuments: dto.charterDocuments,
 		receiverDocuments: dto.receiverDocuments,
 		// Derive a simple cargo type display: show first cargo type or join unique types
-		cargoType:
-			(dto.cargoes && dto.cargoes.length > 0 ? Array.from(new Set(dto.cargoes.map((c: any) => c.type))).join(', ') : ''),
 		// Derive cargo categories (unique)
 		cargoCategory:
 			(dto.cargoes && dto.cargoes.length > 0 ? Array.from(new Set(dto.cargoes.map((c: any) => c.category))).join(', ') : ''),
 	};
-};
-
-var dateFilterParams: IDateFilterParams = {
-	comparator: (filterLocalDateAtMidnight: Date, cellValue: string) => {
-		const selectedDate = dayjs(filterLocalDateAtMidnight);
-		const currentDate = dayjs(cellValue);
-
-		if (currentDate.isBefore(selectedDate)) {
-			return -1;
-		}
-
-		if (currentDate.isAfter(selectedDate)) {
-			return 1;
-		}
-
-		return 0;
-	},
-};
-
-const renderDate = (data: CustomCellRendererProps<ShipRow>) => {
-	return dayjs(data.value).format('DD-MM-YYYY - HH:mm');
 };
 
 const renderImo = (data: CustomCellRendererProps<ShipRow>) => {
@@ -110,7 +87,6 @@ const renderImo = (data: CustomCellRendererProps<ShipRow>) => {
 	const handleExportCargosPdf = async () => {
 		try {
 			const token = localStorage.getItem('ACCESS_TOKEN');
-			const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080/api';
 			const url = `${API_BASE_URL}/ships/${shipData.id}/export/pdf`;
 			const response = await fetch(url, {
 				method: 'GET',
@@ -500,9 +476,6 @@ const renderAgent = (data: CustomCellRendererProps<ShipRow>) => {
 													Port
 												</th>
 												<th style={{ padding: '8px', textAlign: 'left', backgroundColor: '#f5f5f5', borderBottom: '1px solid rgba(224, 224, 224, 1)' }}>
-													Completion Date
-												</th>
-												<th style={{ padding: '8px', textAlign: 'left', backgroundColor: '#f5f5f5', borderBottom: '1px solid rgba(224, 224, 224, 1)' }}>
 													Cargoes
 												</th>
 											</tr>
@@ -521,9 +494,6 @@ const renderAgent = (data: CustomCellRendererProps<ShipRow>) => {
 													</td>
 													<td style={{ padding: '8px', borderBottom: '1px solid rgba(224, 224, 224, 1)' }}>
 														{ship.boardingPort}
-													</td>
-													<td style={{ padding: '8px', borderBottom: '1px solid rgba(224, 224, 224, 1)' }}>
-														{ship.completionDate ? dayjs(ship.completionDate).format('DD-MM-YYYY') : 'N/A'}
 													</td>
 													<td style={{ padding: '8px', borderBottom: '1px solid rgba(224, 224, 224, 1)' }}>
 														{ship.cargoes?.length || 0}
@@ -617,7 +587,6 @@ const renderActions = (data: CustomCellRendererProps<ShipRow>) => {
 	const handlePrintShipDetails = async () => {
 		try {
 			const token = localStorage.getItem('ACCESS_TOKEN');
-			const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080/api';
 			const url = `${API_BASE_URL}/ships/${shipData.id}/export/pdf`;
 			const response = await fetch(url, {
 				method: 'GET',
@@ -1571,16 +1540,16 @@ export const ShipsTable: FC<ShipsTableProps> = ({
 			},
 			{ field: 'imo', headerName: t('form.shipImo.label'), cellRenderer: renderImo },
 			{ field: 'dwt', headerName: t('form.dwt.label') },
-			{ field: 'cargoType', headerName: 'Cargo Type' },
 			{ field: 'cargoCategory', headerName: 'Cargaison Category' },
 			{ field: 'agent', headerName: t('form.agent.label'), cellRenderer: renderAgent },
 			{ field: 'boardingPort', headerName: t('form.boardingPort.label') },
-			{
-				field: 'completionDate',
-				headerName: t('form.completionDate.label'),
-				filter: 'agDateColumnFilter',
-				filterParams: dateFilterParams,
-				cellRenderer: renderDate,
+			{ 
+				field: 'berthingDate', 
+				headerName: t('form.BerthingDate.label'),
+				valueFormatter: (params) => {
+					if (!params.value) return 'N/A';
+					return dayjs(params.value).format('DD-MM-YYYY');
+				}
 			},
 			{
 				headerName: t('common.actions'),

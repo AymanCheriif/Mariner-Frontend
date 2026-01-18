@@ -6,6 +6,7 @@ import { AgGridReact, CustomCellRendererProps } from 'ag-grid-react';
 import { FC, useMemo, useRef, useState } from 'react';
 import { AppButton } from '~components/atoms';
 import { classes } from '~helpers';
+import { API_BASE_URL } from '~services/urls';
 import { SubCategorySummaryDTO } from '~services/subcategories/types';
 import styles from './SubCategoriesTable.module.css';
 import CloseIcon from '@mui/icons-material/Close';
@@ -39,7 +40,6 @@ const renderSubCategory = (data: CustomCellRendererProps<SubCategoryRow>) => {
 	const handleExportPdf = async () => {
 		try {
 			const token = localStorage.getItem('ACCESS_TOKEN');
-			const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080/api';
 			const subCategoryEncoded = encodeURIComponent(subCategoryData.subCategory);
 			const url = `${API_BASE_URL}/subcategories/${subCategoryEncoded}/export-pdf`;
 

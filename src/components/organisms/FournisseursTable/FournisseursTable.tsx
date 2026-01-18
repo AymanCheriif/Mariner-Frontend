@@ -7,6 +7,7 @@ import { FC, useMemo, useRef, useState } from 'react';
 import { AppButton } from '~components/atoms';
 import { classes } from '~helpers';
 import { useTranslation } from '~i18n';
+import { API_BASE_URL } from '~services/urls';
 import { FournisseurSummaryDTO } from '~services/fournisseur/types';
 import styles from './FournisseursTable.module.css';
 import CloseIcon from '@mui/icons-material/Close';
@@ -50,7 +51,6 @@ const renderFournisseurName = (data: CustomCellRendererProps<FournisseurRow>) =>
 	const handleExportPdf = async () => {
 		try {
 			const token = localStorage.getItem('ACCESS_TOKEN');
-			const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080/api';
 			const url = `${API_BASE_URL}/fournisseurs/${data.data?.fournisseurId}/export-pdf`;
 
 			const response = await fetch(url, {
@@ -279,7 +279,6 @@ export const FournisseursTable: FC<FournisseursTableProps> = ({
 	const handleExportFilteredPdf = async () => {
 		try {
 			const token = localStorage.getItem('ACCESS_TOKEN');
-			const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080/api';
 			let url = `${API_BASE_URL}/fournisseurs/export-all-pdf`;
 			const params = new URLSearchParams();
 
@@ -317,7 +316,6 @@ export const FournisseursTable: FC<FournisseursTableProps> = ({
 	const handlePrintFilteredFournisseurs = async () => {
 		try {
 			const token = localStorage.getItem('ACCESS_TOKEN');
-			const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080/api';
 			let url = `${API_BASE_URL}/fournisseurs/export-all-pdf`;
 			const params = new URLSearchParams();
 

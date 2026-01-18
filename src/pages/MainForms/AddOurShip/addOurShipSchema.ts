@@ -19,7 +19,6 @@ const addShipSchema = z.object({
 	shipType: z.string().optional(),
 	boardingPort: z.string().min(1),
 	berthingDate: dateLike,
-	completionDate: dateLike,
 	shipStatus: z.string().min(1),
 	provenance: z.string().min(1),
 	agent: z.string().optional(),
@@ -33,7 +32,6 @@ const addFleetShipSchema = z.object({
 	shipType: z.string().optional(),
 	boardingPort: z.string().min(1),
 	berthingDate: optionalDateLike,
-	completionDate: optionalDateLike,
 	shipStatus: z.string().optional(),
 	provenance: z.string().optional(),
 	agent: z.string().optional(),
@@ -59,12 +57,13 @@ const addCargaisonSchema = z.object({
 	subCategory: z.string().min(1),
 	tonnage: z.string(),
 	// Receiver fields
+	receiverId: z.string().optional(), // For selecting existing receiver
 	receiverMIC: z.string().optional(),
 	receiverName: z.string(),
 	receiverEmail: optionalEmail,
-	receiverPhoneFixe: z.string().optional(),
 	receiverPhoneMobile: z.string().optional(),
 	// Fournisseur fields
+	fournisseurId: z.string().optional(), // For selecting existing fournisseur
 	fournisseurMIC: z.string().optional(),
 	fournisseurName: z.string(),
 	fournisseurEmail: optionalEmail,
@@ -155,12 +154,13 @@ const defaultCargaisonValues: AddOurShipRequest['cargoes'][number] = {
 	subCategory: '',
 	tonnage: '',
 	// Receiver fields
+	receiverId: undefined,
 	receiverMIC: '',
 	receiverName: '',
 	receiverEmail: '',
-	receiverPhoneFixe: '',
 	receiverPhoneMobile: '',
 	// Fournisseur fields
+	fournisseurId: undefined,
 	fournisseurMIC: '',
 	fournisseurName: '',
 	fournisseurEmail: '',
@@ -180,7 +180,6 @@ const defaultAddOurShipFormValues: AddOurShipRequest = {
 		shipType: '',
 		boardingPort: '',
 		berthingDate: new Date(),
-		completionDate: new Date(),
 		shipStatus: '',
 		provenance: '',
 		agent: 'NAVLION',

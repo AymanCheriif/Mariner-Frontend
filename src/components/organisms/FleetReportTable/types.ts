@@ -4,7 +4,6 @@ export interface FleetReport {
 	dwt: string;
 	boardingPort: string;
 	berthingDate: string;
-	completionDate: string;
 	receiver: string;
 	email: string;
 	phoneNumber: string;

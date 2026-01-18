@@ -58,7 +58,6 @@ export const mapShipFormToShipDTO = (form: AddOurShipRequest): ShipDTO => {
 		performanceRate: form.performanceRate,
 
 		berthingDate: dayjs(form.addShip.berthingDate).toISOString(),
-		completionDate: dayjs(form.addShip.completionDate).toISOString(),
 
 		shipOwner: mapShipPersonnelFormToDTO(form.shipOwner),
 		operationDepart: mapShipPersonnelFormToDTO(form.operationDepart),
@@ -100,7 +99,6 @@ export const mapShipDTOToAddOurShipForm = (dto: ShipDTO): AddOurShipRequest => {
 			shipType: dto.shipType ?? '',
 			boardingPort: dto.boardingPort ?? '',
 			berthingDate: dto.berthingDate ? new Date(dto.berthingDate) : new Date(),
-			completionDate: dto.completionDate ? new Date(dto.completionDate) : new Date(),
 			shipStatus: dto.shipStatus ?? '',
 			provenance: dto.provenance ?? '',
 			agent: dto.agent ?? '',

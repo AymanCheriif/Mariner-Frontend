@@ -1,5 +1,5 @@
 import { Box, Modal, Snackbar, Alert, IconButton, Autocomplete, TextField } from '@mui/material';
-import { ColDef, IDateFilterParams } from 'ag-grid-community';
+import { ColDef } from 'ag-grid-community';
 import 'ag-grid-community/styles/ag-grid.css'; // Mandatory CSS required by the grid
 import 'ag-grid-community/styles/ag-theme-quartz.css'; // Optional Theme applied to the grid
 import { AgGridReact, CustomCellRendererProps } from 'ag-grid-react';
@@ -53,7 +53,6 @@ const mapShipDtoToShipReport = (dto: ShipDTO): ShipReport => {
 		dwt: dto.dwt,
 		boardingPort: dto.boardingPort,
 		berthingDate: dto.berthingDate,
-		completionDate: dto.completionDate,
 		agent: dto.agent || 'NAVLION',
 		receiver: allReceivers, // All receivers instead of just first one
 		email: '', // Email field removed from ShipPersonnelContact
@@ -66,32 +65,6 @@ const mapShipDtoToShipReport = (dto: ShipDTO): ShipReport => {
 		charterDocuments: dto.charterDocuments,
 		receiverDocuments: dto.receiverDocuments,
 	};
-};
-
-var dateFilterParams: IDateFilterParams = {
-	comparator: (filterLocalDateAtMidnight: Date, cellValue: string) => {
-		const selectedDate = dayjs(filterLocalDateAtMidnight);
-		const currentDate = dayjs(cellValue);
-
-		console.group();
-		console.log(selectedDate.toISOString());
-		console.log(currentDate.toISOString());
-		console.groupEnd();
-
-		if (currentDate.isBefore(selectedDate)) {
-			return -1;
-		}
-
-		if (currentDate.isAfter(selectedDate)) {
-			return 1;
-		}
-
-		return 0;
-	},
-};
-
-const renderDate = (data: CustomCellRendererProps<ShipReport>) => {
-	return dayjs(data.value).format('DD-MM-YYYY -  HH:mm');
 };
 
 // const NON_EXPORTED_COLUMNS = ['shipDocuments', 'charterDocuments', 'receiverDocuments'];
@@ -1094,7 +1067,6 @@ const ShipReportTable: FC = () => {
 			shipName: string;
 			shipImo: string;
 			boardingPort: string;
-			completionDate: string;
 			tonnage: string | number;
 			category: string;
 			subCategory: string;
@@ -1110,7 +1082,6 @@ const ShipReportTable: FC = () => {
 						shipName: ship.name,
 						shipImo: ship.imo,
 						boardingPort: ship.boardingPort,
-						completionDate: ship.completionDate,
 						tonnage: cargo.tonnage,
 						category: cargo.category,
 						subCategory: cargo.subCategory,
@@ -1144,7 +1115,6 @@ const ShipReportTable: FC = () => {
 			shipName: string;
 			shipImo: string;
 			boardingPort: string;
-			completionDate: string;
 			tonnage: string | number;
 			category: string;
 			subCategory: string;
@@ -1160,7 +1130,6 @@ const ShipReportTable: FC = () => {
 						shipName: ship.name,
 						shipImo: ship.imo,
 						boardingPort: ship.boardingPort,
-						completionDate: ship.completionDate,
 						tonnage: cargo.tonnage,
 						category: cargo.category,
 						subCategory: cargo.subCategory,
@@ -1212,13 +1181,6 @@ const ShipReportTable: FC = () => {
 			// 	filterParams: dateFilterParams,
 			// 	cellRenderer: renderDate,
 			// },
-			{
-				field: 'completionDate',
-				headerName: t('form.completionDate.label'),
-				filter: 'agDateColumnFilter',
-				filterParams: dateFilterParams,
-				cellRenderer: renderDate,
-			},
 			{
 				field: 'receiver',
 				headerName: t('common.receiver'),
@@ -1549,9 +1511,6 @@ const ShipReportTable: FC = () => {
 								</Box>
 								<Box>
 									<strong>Berthing Date:</strong> {dayjs(selectedShip.berthingDate).format('DD-MM-YYYY - HH:mm')}
-								</Box>
-								<Box>
-									<strong>Completion Date:</strong> {dayjs(selectedShip.completionDate).format('DD-MM-YYYY - HH:mm')}
 								</Box>
 								<Box sx={{ gridColumn: 'span 2' }}>
 									<strong>Cargaisons :</strong>

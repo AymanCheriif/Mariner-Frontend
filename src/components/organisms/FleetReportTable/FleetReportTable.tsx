@@ -48,7 +48,6 @@ const mapShipDtoToFleetReport = (dto: ShipDTO): FleetReport => {
 		dwt: dto.dwt,
 		boardingPort: dto.boardingPort,
 		berthingDate: dto.berthingDate,
-		completionDate: dto.completionDate,
 		receiver: allReceivers, // All receivers instead of just first one
 		email: dto.shipOwner?.name ?? '',
 		phoneNumber: dto.shipOwner?.phoneNumber ?? '',

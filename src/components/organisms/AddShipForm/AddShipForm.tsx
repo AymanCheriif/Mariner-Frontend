@@ -121,14 +121,6 @@ export const AddShipForm: FC<Props> = ({ isAgent, isUpdate, isFleet = false }) =
 					/>
 
 					<Controller
-						name="addShip.completionDate"
-						control={control}
-						render={({ field, fieldState }) => (
-							<AppDatePicker muiLabel={t('form.completionDate.label')} error={fieldState.error} {...field} />
-						)}
-					/>
-
-					<Controller
 						name="addShip.shipStatus"
 						control={control}
 						render={({ field, fieldState }) => (

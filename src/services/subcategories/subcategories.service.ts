@@ -1,7 +1,6 @@
 import apiClient from '~helpers/axiosApiClient';
+import { API_BASE_URL } from '~services/urls';
 import { SubCategorySummaryDTO } from './types';
-
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080/api';
 
 const API_ENDPOINTS = {
 	SubCategories: `${API_BASE_URL}/subcategories`,

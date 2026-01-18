@@ -4,7 +4,6 @@ export interface ShipReport {
 	dwt: string;
 	boardingPort: string;
 	berthingDate: string;
-	completionDate: string;
 	agent: string;
 	receiver: string;
 	email: string;
