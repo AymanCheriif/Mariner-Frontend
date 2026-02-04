@@ -8,5 +8,6 @@ export interface UserDTO {
 	firstName: string;
 	lastName: string;
 	email: string;
+	username?: string;
 	role: RoleDTO;
 }

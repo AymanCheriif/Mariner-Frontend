@@ -16,9 +16,9 @@ export const LoginForm = () => {
 				control={control}
 				render={({ field, fieldState }) => (
 					<Input
-						label={t('form.email.address')}
-						placeholder={t('form.email.address')}
-						type="email"
+						label="Username or Email"
+						placeholder="Enter username or email"
+						type="text"
 						error={fieldState.error}
 						{...field}
 					/>

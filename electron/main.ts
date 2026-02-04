@@ -22,6 +22,10 @@ function createWindow() {
 		icon: path.join(process.env.VITE_PUBLIC, 'icons/logo.png'),
 		webPreferences: {
 			preload: path.join(__dirname, 'preload.js'),
+			nodeIntegration: false,
+			contextIsolation: true,
+			// Enable persistent storage
+			partition: 'persist:mariner',
 		},
 		width: 1200,
 		height: 900,

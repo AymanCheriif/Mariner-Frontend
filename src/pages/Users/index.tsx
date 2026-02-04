@@ -16,6 +16,7 @@ const createUserSchema = z.object({
 	firstName: z.string().min(1),
 	lastName: z.string().min(1),
 	email: z.string().email(),
+	username: z.string().optional(),
 	password: z.string().min(1),
 	roleId: z.string().uuid(),
 });
@@ -29,6 +30,7 @@ const defaultCreateUserValues: CreateUser = {
 	email: '',
 	firstName: '',
 	lastName: '',
+	username: '',
 	password: '',
 	roleId: '',
 };
@@ -71,7 +73,7 @@ export const UsersPage = () => {
 
 		setFormType('UPDATE');
 		const { role, ...userData } = user;
-		reset({ ...userData, password: '', roleId: role.id });
+		reset({ ...userData, username: user.username || '', password: '', roleId: role.id });
 	};
 
 	const onCreateUserSuccess = () => {
@@ -140,6 +142,14 @@ export const UsersPage = () => {
 						control={control}
 						render={({ field, fieldState }) => (
 							<Input muiLabel={t('form.email.label')} className={styles.input} error={fieldState.error} {...field} />
+						)}
+					/>
+
+					<Controller
+						name="username"
+						control={control}
+						render={({ field, fieldState }) => (
+							<Input muiLabel="Username (optional)" className={styles.input} error={fieldState.error} {...field} />
 						)}
 					/>
 

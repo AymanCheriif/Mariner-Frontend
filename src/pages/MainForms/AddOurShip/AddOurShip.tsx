@@ -32,7 +32,7 @@ export const AddOurShipPage: FC = () => {
 	const isUpdateMode = useMemo(() => typeof id === 'string' && id.length > 0, [id]);
 
 	// Track if the ship being updated is a fleet
-	const [isFleet, setIsFleet] = useState(false);
+	const [isFleet, setIsFleet] = useState(true);
 
 	// For add mode, use the hook
 	const addShipHook = useAddShip({
@@ -40,6 +40,7 @@ export const AddOurShipPage: FC = () => {
 			// Show add success toast
 			setToast({ open: true, message: 'Ship added successfully', severity: 'success' });
 		},
+		isFleet: true, // Always true for non-fleet ships now
 	});
 
 	// For update mode - regular ships
@@ -122,8 +123,8 @@ export const AddOurShipPage: FC = () => {
 		try {
 			setIsUpdating(true);
 			const shipDTO = mapShipFormToShipDTO(data);
-			// Preserve the isFleet flag
-			shipDTO.isFleet = isFleet;
+			// Preserve the isFleet flag (always true now)
+			shipDTO.isFleet = true;
 			await addShipService.updateShip(id!, shipDTO);
 			// Navigate back to the appropriate report page with success toast state
 			const targetPage = isFleet ? '/fleets-report' : '/report';

@@ -12,7 +12,10 @@ export const ProfileBadge: FC = () => {
 	const navigate = useNavigate();
 
 	const handleLogout = () => {
+		// Clear token from both storages
 		localStorage.removeItem(CONSTANTS.AccessToken);
+		localStorage.removeItem('MARINER_USERNAME');
+		sessionStorage.removeItem(CONSTANTS.AccessToken);
 		navigate(EPaths.LOGIN);
 	};
 

@@ -14,7 +14,7 @@ import styles from './AddAgentShip.module.css';
 
 export const AddAgentShipPage: FC = () => {
 	const t = useTranslation();
-	const { onSubmit, formMethods } = useAddShip();
+	const { onSubmit, formMethods } = useAddShip({ isFleet: true });
 
 	return (
 		<form className={styles.container} onSubmit={onSubmit}>

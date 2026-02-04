@@ -18,7 +18,8 @@ const instance = axios.create({
 });
 
 instance.interceptors.request.use((config) => {
-	const accessToken = localStorage.getItem(CONSTANTS.AccessToken);
+	// Check both localStorage (Remember Me) and sessionStorage (session only)
+	const accessToken = localStorage.getItem(CONSTANTS.AccessToken) || sessionStorage.getItem(CONSTANTS.AccessToken);
 
 	if (accessToken !== null && config.url !== API_ENDPOINTS.Login) {
 		config.headers.Authorization = `Bearer ${accessToken}`;
