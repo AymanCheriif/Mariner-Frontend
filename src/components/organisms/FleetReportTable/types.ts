@@ -6,7 +6,7 @@ export interface FleetReport {
 	berthingDate: string;
 	receiver: string;
 	email: string;
-	phoneNumber: string;
+	phoneMobile: string;
 	fournisseur: string;
 	cargaison: boolean;
 	tonnage: string;

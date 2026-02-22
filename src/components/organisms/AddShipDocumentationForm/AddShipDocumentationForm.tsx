@@ -9,7 +9,7 @@ export const AddShipDocumentationForm: FC = () => {
 	return (
 		<AppCard title={t('common.documentation')}>
 			<DocumentationFormItem titleKey="common.ship" formName="documents.ship" />
-			<DocumentationFormItem titleKey="common.charter" formName="documents.charter" />
+			<DocumentationFormItem titleKey="common.fournisseur" formName="documents.charter" />
 			<DocumentationFormItem titleKey="common.receiver" formName="documents.receiver" />
 		</AppCard>
 	);

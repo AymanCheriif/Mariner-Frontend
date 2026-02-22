@@ -25,9 +25,9 @@ export const UpdateShipPersonnelContactForm: FC<Props> = ({ title, formName }) =
     const current = getValues(formName) as AddOurShipRequest[typeof formName] | undefined;
     if (current) {
       setValue(`${formName}.name`, current.name ?? '', { shouldDirty: false, shouldValidate: false });
-      setValue(`${formName}.phoneNumber`, current.phoneNumber ?? '', { shouldDirty: false, shouldValidate: false });
-      setValue(`${formName}.whatsAppNumber`, current.whatsAppNumber ?? '', { shouldDirty: false, shouldValidate: false });
-      setValue(`${formName}.wechatNumber`, current.wechatNumber ?? '', { shouldDirty: false, shouldValidate: false });
+      setValue(`${formName}.email`, current.email ?? '', { shouldDirty: false, shouldValidate: false });
+      setValue(`${formName}.phoneFixe`, current.phoneFixe ?? '', { shouldDirty: false, shouldValidate: false });
+      setValue(`${formName}.phoneMobile`, current.phoneMobile ?? '', { shouldDirty: false, shouldValidate: false });
     }
   }, [contact, formName, getValues, setValue]);
 
@@ -43,35 +43,29 @@ export const UpdateShipPersonnelContactForm: FC<Props> = ({ title, formName }) =
       />
 
       <Controller
-        name={`${formName}.phoneNumber`}
+        name={`${formName}.email`}
         control={control}
         defaultValue=""
         render={({ field, fieldState }) => (
-          <Input muiLabel={t('form.phoneNumber.label')} className={styles.input} error={fieldState.error} {...field} value={field.value ?? ''} />
+          <Input muiLabel={t('form.email.label')} className={styles.input} error={fieldState.error} {...field} value={field.value ?? ''} />
         )}
       />
 
       <Controller
-        name={`${formName}.whatsAppNumber`}
+        name={`${formName}.phoneFixe`}
         control={control}
         defaultValue=""
         render={({ field, fieldState }) => (
-          <Input
-            muiLabel={t('form.whatsAppNumber.label')}
-            className={styles.input}
-            error={fieldState.error}
-            {...field}
-            value={field.value ?? ''}
-          />
+          <Input muiLabel={t('form.phoneFixe.label')} className={styles.input} error={fieldState.error} {...field} value={field.value ?? ''} />
         )}
       />
 
       <Controller
-        name={`${formName}.wechatNumber`}
+        name={`${formName}.phoneMobile`}
         control={control}
         defaultValue=""
         render={({ field, fieldState }) => (
-          <Input muiLabel={t('form.weChatNumber.label')} className={styles.input} error={fieldState.error} {...field} value={field.value ?? ''} />
+          <Input muiLabel={t('form.phoneMobile.label')} className={styles.input} error={fieldState.error} {...field} value={field.value ?? ''} />
         )}
       />
     </AppCard>

@@ -3,9 +3,9 @@ import { Nullable, NullableOrUndefined } from '~types/utils';
 interface ShipPersonnelContactDTO {
 	id?: string;
 	name: string;
-	phoneNumber: Nullable<string>;
-	whatsAppNumber: Nullable<string>;
-	weChatNumber: Nullable<string>;
+	email: Nullable<string>;
+	phoneFixe: Nullable<string>;
+	phoneMobile: Nullable<string>;
 }
 
 interface ShipCargoDTO {

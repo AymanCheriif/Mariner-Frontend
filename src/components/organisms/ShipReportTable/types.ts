@@ -7,7 +7,7 @@ export interface ShipReport {
 	agent: string;
 	receiver: string;
 	email: string;
-	phoneNumber: string;
+	phoneMobile: string;
 	fournisseur: string;
 	cargaison: boolean;
 	category: string;

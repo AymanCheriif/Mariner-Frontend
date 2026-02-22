@@ -18,8 +18,12 @@ export const useAddShip = ({ onCreated, isFleet = false }: UseAddShipProps = {})
 	// Use the appropriate schema based on isFleet flag
 	const schema = isFleet ? addFleetShipFormSchema : addOurShipSchema;
 
+	const defaultValues = isFleet
+		? { ...defaultAddOurShipFormValues, addShip: { ...defaultAddOurShipFormValues.addShip, agent: '' } }
+		: defaultAddOurShipFormValues;
+
 	const formMethods = useForm<AddOurShipRequest>({
-		defaultValues: defaultAddOurShipFormValues,
+		defaultValues,
 		resolver: zodResolver(schema),
 		mode: 'onChange',
 	});

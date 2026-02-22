@@ -31,8 +31,8 @@ export const AddOurShipPage: FC = () => {
 	const { id } = useParams();
 	const isUpdateMode = useMemo(() => typeof id === 'string' && id.length > 0, [id]);
 
-	// Track if the ship being updated is a fleet
-	const [isFleet, setIsFleet] = useState(true);
+	// Track if the ship being updated is a fleet (only affects which form schema/validation is used)
+	const [isFleet, setIsFleet] = useState(false);
 
 	// For add mode, use the hook
 	const addShipHook = useAddShip({
@@ -40,7 +40,6 @@ export const AddOurShipPage: FC = () => {
 			// Show add success toast
 			setToast({ open: true, message: 'Ship added successfully', severity: 'success' });
 		},
-		isFleet: true, // Always true for non-fleet ships now
 	});
 
 	// For update mode - regular ships
@@ -123,8 +122,8 @@ export const AddOurShipPage: FC = () => {
 		try {
 			setIsUpdating(true);
 			const shipDTO = mapShipFormToShipDTO(data);
-			// Preserve the isFleet flag (always true now)
-			shipDTO.isFleet = true;
+			// Preserve the isFleet flag from the original ship data
+			shipDTO.isFleet = isFleet;
 			await addShipService.updateShip(id!, shipDTO);
 			// Navigate back to the appropriate report page with success toast state
 			const targetPage = isFleet ? '/fleets-report' : '/report';
@@ -160,10 +159,9 @@ export const AddOurShipPage: FC = () => {
 					</Box>
 				</Backdrop>
 
-				<AddShipForm isUpdate={isUpdateMode} isFleet={isFleet} />
+				<AddShipForm isUpdate={isUpdateMode} />
 
-				{/* Only show AddCargaisonForm for regular ships, not for fleets */}
-				{!isFleet && <AddCargaisonForm isUpdate={isUpdateMode} />}
+				<AddCargaisonForm isUpdate={isUpdateMode} />
 
 				<div className={styles.row}>
 					{isUpdateMode ? (
@@ -191,14 +189,11 @@ export const AddOurShipPage: FC = () => {
 						placeholder={t('form.yourNotes.label')}
 						formName="remarksAndFacts"
 					/>
-					{/* Only show performanceRate for regular ships, not for fleets */}
-					{!isFleet && (
-						<AddTextAreaForm
-							title={t('common.performanceRate')}
-							placeholder={t('form.performanceRateFunction')}
-							formName="performanceRate"
-						/>
-					)}
+					<AddTextAreaForm
+						title={t('common.performanceRate')}
+						placeholder={t('form.performanceRateFunction')}
+						formName="performanceRate"
+					/>
 				</div>
 
 				<div className={styles.submitButtonContainer}>

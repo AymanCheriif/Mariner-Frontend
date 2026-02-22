@@ -328,9 +328,8 @@ export const AddCargaisonForm: FC<Props> = ({ isUpdate }) => {
 							</div>
 						</div>
 
-						{/* Fournisseur Section - Only show for cargaison type */}
-						{cargoes[index]?.type === 'cargaison' && (
-							<div className={styles.fournisseurSection}>
+						{/* Fournisseur Section */}
+						<div className={styles.fournisseurSection}>
 								<div className={styles.sectionTitle}>Fournisseur</div>
 
 								{/* Radio buttons to choose between existing or new fournisseur */}
@@ -458,37 +457,7 @@ export const AddCargaisonForm: FC<Props> = ({ isUpdate }) => {
 									)}
 								</div>
 							</div>
-						)}
 
-						{/* Legacy fields for backward compatibility */}
-						<details style={{ marginTop: '1rem' }}>
-							<summary style={{ cursor: 'pointer', color: '#666' }}>Legacy Fields (Deprecated)</summary>
-							<div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '1rem', marginTop: '0.5rem' }}>
-								<Controller
-									name={`cargoes.${index}.phoneNumber`}
-									control={control}
-									render={({ field, fieldState }) => (
-										<Input muiLabel={t('form.phoneNumber.label')} error={fieldState.error} {...field} />
-									)}
-								/>
-
-								<Controller
-									name={`cargoes.${index}.whatsAppNumber`}
-									control={control}
-									render={({ field, fieldState }) => (
-										<Input muiLabel={t('form.whatsAppNumber.label')} error={fieldState.error} {...field} />
-									)}
-								/>
-
-								<Controller
-									name={`cargoes.${index}.email`}
-									control={control}
-									render={({ field, fieldState }) => (
-										<Input muiLabel={t('form.email.label')} error={fieldState.error} {...field} />
-									)}
-								/>
-							</div>
-						</details>
 					</div>
 				);
 			})}

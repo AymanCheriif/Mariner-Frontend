@@ -5,16 +5,16 @@ import { AddOurShipRequest } from '../AddOurShip/addOurShipSchema';
 const mapShipPersonnelFormToDTO = (form: AddOurShipRequest['shipOwner']): ShipDTO['shipOwner'] => {
 	const isEmpty = (v: unknown) => v === '' || v === null || v === undefined;
 	const allEmpty =
-		isEmpty(form.name) && isEmpty(form.phoneNumber) && isEmpty(form.whatsAppNumber) && isEmpty(form.wechatNumber);
+		isEmpty(form.name) && isEmpty(form.email) && isEmpty(form.phoneFixe) && isEmpty(form.phoneMobile);
 	if (allEmpty) {
 		return null;
 	}
 
 	return {
 		name: form.name ?? '',
-		phoneNumber: form.phoneNumber ?? '',
-		whatsAppNumber: form.whatsAppNumber ?? '',
-		weChatNumber: form.wechatNumber ?? '',
+		email: form.email ?? '',
+		phoneFixe: form.phoneFixe ?? '',
+		phoneMobile: form.phoneMobile ?? '',
 	};
 };
 
@@ -82,9 +82,9 @@ export const mapShipFormToShipDTO = (form: AddOurShipRequest): ShipDTO => {
 export const mapShipDTOToAddOurShipForm = (dto: ShipDTO): AddOurShipRequest => {
 	const mapContact = (c?: ShipDTO['shipOwner']) => ({
 		name: c?.name ?? '',
-		phoneNumber: c?.phoneNumber ?? '',
-		whatsAppNumber: c?.whatsAppNumber ?? '',
-		wechatNumber: c?.weChatNumber ?? '',
+		email: c?.email ?? '',
+		phoneFixe: c?.phoneFixe ?? '',
+		phoneMobile: c?.phoneMobile ?? '',
 	});
 
 	const toCargaisonType = (val?: string): 'cargaison' | 'container' => {

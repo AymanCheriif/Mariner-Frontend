@@ -20,7 +20,6 @@ import DescriptionIcon from '@mui/icons-material/Description';
 import InfoIcon from '@mui/icons-material/Info';
 import PhoneIcon from '@mui/icons-material/Phone';
 import EmailIcon from '@mui/icons-material/Email';
-import ChatIcon from '@mui/icons-material/Chat';
 import WhatsAppIcon from '@mui/icons-material/WhatsApp';
 import { Tooltip } from '@mui/material';
 import { useQueryClient } from '@tanstack/react-query';
@@ -55,8 +54,8 @@ const mapShipDtoToShipReport = (dto: ShipDTO): ShipReport => {
 		berthingDate: dto.berthingDate,
 		agent: dto.agent || 'NAVLION',
 		receiver: allReceivers, // All receivers instead of just first one
-		email: '', // Email field removed from ShipPersonnelContact
-		phoneNumber: dto.shipOwner?.phoneNumber ?? '',
+		email: dto.shipOwner?.email ?? '',
+		phoneMobile: dto.shipOwner?.phoneMobile ?? '',
 		fournisseur: allFournisseurs, // All fournisseurs instead of just first one
 		cargaison: dto.cargoes.length > 0,
 		category: allCategories,
@@ -551,7 +550,13 @@ const renderActions = (data: CustomCellRendererProps<ShipReport>) => {
 										<Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
 											<strong>Name:</strong>
 											<span>{shipData.shipOwner.name}</span>
-											<Tooltip title="Contact Info" arrow>
+										</Box>
+									)}
+									{shipData.shipOwner.email && (
+										<Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
+											<strong>Email:</strong>
+											<span>{shipData.shipOwner.email}</span>
+											<Tooltip title="Send Email" arrow>
 												<IconButton
 													size="small"
 													sx={{
@@ -561,7 +566,7 @@ const renderActions = (data: CustomCellRendererProps<ShipReport>) => {
 														},
 													}}
 													onClick={() => {
-														window.location.href = `mailto:${shipData.shipOwner.name}`;
+														window.location.href = `mailto:${shipData.shipOwner.email}`;
 													}}
 												>
 													<EmailIcon fontSize="small" />
@@ -569,10 +574,30 @@ const renderActions = (data: CustomCellRendererProps<ShipReport>) => {
 											</Tooltip>
 										</Box>
 									)}
-									{shipData.shipOwner.phoneNumber && (
+									{shipData.shipOwner.phoneFixe && (
 										<Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
-											<strong>Phone:</strong>
-											<span>{shipData.shipOwner.phoneNumber}</span>
+											<strong>Phone Fixe:</strong>
+											<span>{shipData.shipOwner.phoneFixe}</span>
+											<Tooltip title="Call" arrow>
+												<IconButton
+													size="small"
+													sx={{
+														color: '#1976d2',
+														'&:hover': {
+															backgroundColor: 'rgba(25, 118, 210, 0.1)',
+														},
+													}}
+													onClick={() => window.open(`tel:${shipData.shipOwner.phoneFixe}`, '_blank')}
+												>
+													<PhoneIcon fontSize="small" />
+												</IconButton>
+											</Tooltip>
+										</Box>
+									)}
+									{shipData.shipOwner.phoneMobile && (
+										<Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
+											<strong>Phone Mobile:</strong>
+											<span>{shipData.shipOwner.phoneMobile}</span>
 											<Tooltip title="Call via WhatsApp" arrow>
 												<IconButton
 													size="small"
@@ -584,57 +609,12 @@ const renderActions = (data: CustomCellRendererProps<ShipReport>) => {
 													}}
 													onClick={() =>
 														window.open(
-															`https://wa.me/${shipData.shipOwner.phoneNumber.replace(/[^0-9]/g, '')}`,
-															'_blank'
-														)
-													}
-												>
-													<PhoneIcon fontSize="small" />
-												</IconButton>
-											</Tooltip>
-										</Box>
-									)}
-									{shipData.shipOwner.whatsAppNumber && (
-										<Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
-											<strong>WhatsApp:</strong>
-											<span>{shipData.shipOwner.whatsAppNumber}</span>
-											<Tooltip title="Chat on WhatsApp" arrow>
-												<IconButton
-													size="small"
-													sx={{
-														color: '#25D366',
-														'&:hover': {
-															backgroundColor: 'rgba(37, 211, 102, 0.1)',
-														},
-													}}
-													onClick={() =>
-														window.open(
-															`https://wa.me/${shipData.shipOwner.whatsAppNumber.replace(/[^0-9]/g, '')}`,
+															`https://wa.me/${shipData.shipOwner.phoneMobile.replace(/[^0-9]/g, '')}`,
 															'_blank'
 														)
 													}
 												>
 													<WhatsAppIcon fontSize="small" />
-												</IconButton>
-											</Tooltip>
-										</Box>
-									)}
-									{shipData.shipOwner.weChatNumber && (
-										<Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
-											<strong>WeChat:</strong>
-											<span>{shipData.shipOwner.weChatNumber}</span>
-											<Tooltip title="Open WeChat" arrow>
-												<IconButton
-													size="small"
-													sx={{
-														color: '#07C160',
-														'&:hover': {
-															backgroundColor: 'rgba(7, 193, 96, 0.1)',
-														},
-													}}
-													onClick={() => window.open(`weixin://dl/chat?${shipData.shipOwner.weChatNumber}`, '_blank')}
-												>
-													<ChatIcon fontSize="small" />
 												</IconButton>
 											</Tooltip>
 										</Box>
@@ -662,7 +642,13 @@ const renderActions = (data: CustomCellRendererProps<ShipReport>) => {
 										<Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
 											<strong>Name:</strong>
 											<span>{shipData.operationDepart.name}</span>
-											<Tooltip title="Contact Info" arrow>
+										</Box>
+									)}
+									{shipData.operationDepart.email && (
+										<Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
+											<strong>Email:</strong>
+											<span>{shipData.operationDepart.email}</span>
+											<Tooltip title="Send Email" arrow>
 												<IconButton
 													size="small"
 													sx={{
@@ -672,7 +658,7 @@ const renderActions = (data: CustomCellRendererProps<ShipReport>) => {
 														},
 													}}
 													onClick={() => {
-														window.location.href = `mailto:${shipData.operationDepart.name}`;
+														window.location.href = `mailto:${shipData.operationDepart.email}`;
 													}}
 												>
 													<EmailIcon fontSize="small" />
@@ -680,10 +666,30 @@ const renderActions = (data: CustomCellRendererProps<ShipReport>) => {
 											</Tooltip>
 										</Box>
 									)}
-									{shipData.operationDepart.phoneNumber && (
+									{shipData.operationDepart.phoneFixe && (
 										<Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
-											<strong>Phone:</strong>
-											<span>{shipData.operationDepart.phoneNumber}</span>
+											<strong>Phone Fixe:</strong>
+											<span>{shipData.operationDepart.phoneFixe}</span>
+											<Tooltip title="Call" arrow>
+												<IconButton
+													size="small"
+													sx={{
+														color: '#1976d2',
+														'&:hover': {
+															backgroundColor: 'rgba(25, 118, 210, 0.1)',
+														},
+													}}
+													onClick={() => window.open(`tel:${shipData.operationDepart.phoneFixe}`, '_blank')}
+												>
+													<PhoneIcon fontSize="small" />
+												</IconButton>
+											</Tooltip>
+										</Box>
+									)}
+									{shipData.operationDepart.phoneMobile && (
+										<Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
+											<strong>Phone Mobile:</strong>
+											<span>{shipData.operationDepart.phoneMobile}</span>
 											<Tooltip title="Call via WhatsApp" arrow>
 												<IconButton
 													size="small"
@@ -695,59 +701,12 @@ const renderActions = (data: CustomCellRendererProps<ShipReport>) => {
 													}}
 													onClick={() =>
 														window.open(
-															`https://wa.me/${shipData.operationDepart.phoneNumber.replace(/[^0-9]/g, '')}`,
-															'_blank'
-														)
-													}
-												>
-													<PhoneIcon fontSize="small" />
-												</IconButton>
-											</Tooltip>
-										</Box>
-									)}
-									{shipData.operationDepart.whatsAppNumber && (
-										<Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
-											<strong>WhatsApp:</strong>
-											<span>{shipData.operationDepart.whatsAppNumber}</span>
-											<Tooltip title="Chat on WhatsApp" arrow>
-												<IconButton
-													size="small"
-													sx={{
-														color: '#25D366',
-														'&:hover': {
-															backgroundColor: 'rgba(37, 211, 102, 0.1)',
-														},
-													}}
-													onClick={() =>
-														window.open(
-															`https://wa.me/${shipData.operationDepart.whatsAppNumber.replace(/[^0-9]/g, '')}`,
+															`https://wa.me/${shipData.operationDepart.phoneMobile.replace(/[^0-9]/g, '')}`,
 															'_blank'
 														)
 													}
 												>
 													<WhatsAppIcon fontSize="small" />
-												</IconButton>
-											</Tooltip>
-										</Box>
-									)}
-									{shipData.operationDepart.weChatNumber && (
-										<Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
-											<strong>WeChat:</strong>
-											<span>{shipData.operationDepart.weChatNumber}</span>
-											<Tooltip title="Open WeChat" arrow>
-												<IconButton
-													size="small"
-													sx={{
-														color: '#07C160',
-														'&:hover': {
-															backgroundColor: 'rgba(7, 193, 96, 0.1)',
-														},
-													}}
-													onClick={() =>
-														window.open(`weixin://dl/chat?${shipData.operationDepart.weChatNumber}`, '_blank')
-													}
-												>
-													<ChatIcon fontSize="small" />
 												</IconButton>
 											</Tooltip>
 										</Box>
@@ -777,7 +736,13 @@ const renderActions = (data: CustomCellRendererProps<ShipReport>) => {
 										<Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
 											<strong>Name:</strong>
 											<span>{shipData.chartingDepart.name}</span>
-											<Tooltip title="Contact Info" arrow>
+										</Box>
+									)}
+									{shipData.chartingDepart.email && (
+										<Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
+											<strong>Email:</strong>
+											<span>{shipData.chartingDepart.email}</span>
+											<Tooltip title="Send Email" arrow>
 												<IconButton
 													size="small"
 													sx={{
@@ -787,7 +752,7 @@ const renderActions = (data: CustomCellRendererProps<ShipReport>) => {
 														},
 													}}
 													onClick={() => {
-														window.location.href = `mailto:${shipData.chartingDepart.name}`;
+														window.location.href = `mailto:${shipData.chartingDepart.email}`;
 													}}
 												>
 													<EmailIcon fontSize="small" />
@@ -795,10 +760,30 @@ const renderActions = (data: CustomCellRendererProps<ShipReport>) => {
 											</Tooltip>
 										</Box>
 									)}
-									{shipData.chartingDepart.phoneNumber && (
+									{shipData.chartingDepart.phoneFixe && (
 										<Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
-											<strong>Phone:</strong>
-											<span>{shipData.chartingDepart.phoneNumber}</span>
+											<strong>Phone Fixe:</strong>
+											<span>{shipData.chartingDepart.phoneFixe}</span>
+											<Tooltip title="Call" arrow>
+												<IconButton
+													size="small"
+													sx={{
+														color: '#1976d2',
+														'&:hover': {
+															backgroundColor: 'rgba(25, 118, 210, 0.1)',
+														},
+													}}
+													onClick={() => window.open(`tel:${shipData.chartingDepart.phoneFixe}`, '_blank')}
+												>
+													<PhoneIcon fontSize="small" />
+												</IconButton>
+											</Tooltip>
+										</Box>
+									)}
+									{shipData.chartingDepart.phoneMobile && (
+										<Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
+											<strong>Phone Mobile:</strong>
+											<span>{shipData.chartingDepart.phoneMobile}</span>
 											<Tooltip title="Call via WhatsApp" arrow>
 												<IconButton
 													size="small"
@@ -810,59 +795,12 @@ const renderActions = (data: CustomCellRendererProps<ShipReport>) => {
 													}}
 													onClick={() =>
 														window.open(
-															`https://wa.me/${shipData.chartingDepart.phoneNumber.replace(/[^0-9]/g, '')}`,
-															'_blank'
-														)
-													}
-												>
-													<PhoneIcon fontSize="small" />
-												</IconButton>
-											</Tooltip>
-										</Box>
-									)}
-									{shipData.chartingDepart.whatsAppNumber && (
-										<Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
-											<strong>WhatsApp:</strong>
-											<span>{shipData.chartingDepart.whatsAppNumber}</span>
-											<Tooltip title="Chat on WhatsApp" arrow>
-												<IconButton
-													size="small"
-													sx={{
-														color: '#25D366',
-														'&:hover': {
-															backgroundColor: 'rgba(37, 211, 102, 0.1)',
-														},
-													}}
-													onClick={() =>
-														window.open(
-															`https://wa.me/${shipData.chartingDepart.whatsAppNumber.replace(/[^0-9]/g, '')}`,
+															`https://wa.me/${shipData.chartingDepart.phoneMobile.replace(/[^0-9]/g, '')}`,
 															'_blank'
 														)
 													}
 												>
 													<WhatsAppIcon fontSize="small" />
-												</IconButton>
-											</Tooltip>
-										</Box>
-									)}
-									{shipData.chartingDepart.weChatNumber && (
-										<Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
-											<strong>WeChat:</strong>
-											<span>{shipData.chartingDepart.weChatNumber}</span>
-											<Tooltip title="Open WeChat" arrow>
-												<IconButton
-													size="small"
-													sx={{
-														color: '#07C160',
-														'&:hover': {
-															backgroundColor: 'rgba(7, 193, 96, 0.1)',
-														},
-													}}
-													onClick={() =>
-														window.open(`weixin://dl/chat?${shipData.chartingDepart.weChatNumber}`, '_blank')
-													}
-												>
-													<ChatIcon fontSize="small" />
 												</IconButton>
 											</Tooltip>
 										</Box>
@@ -1213,7 +1151,7 @@ const ShipReportTable: FC = () => {
 				},
 			},
 			{ field: 'email', headerName: t('form.email.label') },
-			{ field: 'phoneNumber', headerName: t('form.phoneNumber.label') },
+			{ field: 'phoneMobile', headerName: t('form.phoneNumber.label') },
 			{
 				field: 'fournisseur',
 				headerName: t('common.fournisseur'),

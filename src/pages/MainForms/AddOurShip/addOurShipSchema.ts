@@ -39,9 +39,9 @@ const addFleetShipSchema = z.object({
 
 const addPersonnelContactSchema = z.object({
 	name: z.string().min(1, 'Name is required'),
-	phoneNumber: z.string(), // TODO: add phone numebr validations
-	whatsAppNumber: z.string(),
-	wechatNumber: z.string(),
+	email: z.union([z.literal(''), z.string().email()]).optional().default(''),
+	phoneFixe: z.string(),
+	phoneMobile: z.string(),
 });
 
 /** ######################## Cargo ######################## */
@@ -142,9 +142,9 @@ type AddOurShipRequest = z.infer<typeof addOurShipSchema>;
 /** ######################## Default Values ######################## */
 const defaultPersonnelContactFormValues: AddOurShipRequest['shipOwner'] = {
 	name: '',
-	phoneNumber: '',
-	wechatNumber: '',
-	whatsAppNumber: '',
+	email: '',
+	phoneFixe: '',
+	phoneMobile: '',
 };
 
 const defaultCargaisonValues: AddOurShipRequest['cargoes'][number] = {
