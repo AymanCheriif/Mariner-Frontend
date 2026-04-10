@@ -69,7 +69,9 @@ const exportShipsPDF = async (
 	boardingPort?: string,
 	receiverName?: string,
 	subCategory?: string,
-	isFleet?: boolean
+	isFleet?: boolean,
+	dateFrom?: string,
+	dateTo?: string
 ): Promise<void> => {
 	try {
 		// Build query parameters
@@ -78,6 +80,8 @@ const exportShipsPDF = async (
 		if (receiverName) params.append('receiverName', receiverName);
 		if (subCategory) params.append('subCategory', subCategory);
 		if (isFleet !== undefined) params.append('isFleet', isFleet.toString());
+		if (dateFrom) params.append('dateFrom', dateFrom);
+		if (dateTo) params.append('dateTo', dateTo);
 
 		const queryString = params.toString();
 		const endpoint = `${API_ENDPOINTS.CreateShip}/export-all-pdf${queryString ? `?${queryString}` : ''}`;

@@ -1524,7 +1524,14 @@ export const ShipsTable: FC<ShipsTableProps> = ({
 
 	const exportPdfData = async () => {
 		try {
-			await addShipService.exportShipsPDF(selectedPort || undefined, undefined, undefined, false);
+			await addShipService.exportShipsPDF(
+				selectedPort || undefined,
+				selectedReceiver || undefined,
+				selectedSubCategory || undefined,
+				false,
+				dateFrom ? dateFrom.format('YYYY-MM-DD') : undefined,
+				dateTo ? dateTo.format('YYYY-MM-DD') : undefined
+			);
 		} catch (error) {
 			console.error('Error exporting PDF:', error);
 			showToast('Failed to export PDF. Please try again.', 'error');
