@@ -1,4 +1,5 @@
 export interface ShipReport {
+	id?: string;
 	name: string;
 	imo: string;
 	dwt: string;
