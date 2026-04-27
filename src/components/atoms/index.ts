@@ -12,3 +12,4 @@ export * from './MainHeader';
 export * from './MainSidebar';
 export * from './ProfileBadge';
 export * from './TextArea';
+export * from './TableStateOverlay';

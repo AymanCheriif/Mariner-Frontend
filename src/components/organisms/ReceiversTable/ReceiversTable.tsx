@@ -4,7 +4,7 @@ import 'ag-grid-community/styles/ag-grid.css';
 import 'ag-grid-community/styles/ag-theme-quartz.css';
 import { AgGridReact, CustomCellRendererProps } from 'ag-grid-react';
 import { FC, useMemo, useRef, useState, useEffect } from 'react';
-import { AppButton } from '~components/atoms';
+import { AppButton, TableStateOverlay } from '~components/atoms';
 import { classes } from '~helpers';
 import { useTranslation } from '~i18n';
 import { useGetAllReceivers } from '~hooks/receivers';
@@ -44,6 +44,7 @@ const mapReceiverSummaryToRow = (dto: ReceiverSummaryDTO): ReceiverRow => {
 
 const renderActions = (data: CustomCellRendererProps<ReceiverRow>) => {
 	const [openDetailsModal, setOpenDetailsModal] = useState(false);
+	const [isExportingPdf, setIsExportingPdf] = useState(false);
 
 	const receiverData = data.context.receiverDtoMap.get(data.data?.receiverId);
 
@@ -61,6 +62,7 @@ const renderActions = (data: CustomCellRendererProps<ReceiverRow>) => {
 
 	const handleExportPdf = async () => {
 		try {
+			setIsExportingPdf(true);
 			const token = localStorage.getItem('ACCESS_TOKEN');
 			const url = `${API_BASE_URL}/receivers/${receiverData.receiverId}/export-pdf`;
 			const response = await fetch(url, {
@@ -87,6 +89,8 @@ const renderActions = (data: CustomCellRendererProps<ReceiverRow>) => {
 			if (data.context && data.context.showToast) {
 				data.context.showToast('PDF export failed', 'error');
 			}
+		} finally {
+			setIsExportingPdf(false);
 		}
 	};
 
@@ -384,6 +388,7 @@ const renderActions = (data: CustomCellRendererProps<ReceiverRow>) => {
 						<AppButton
 							onClick={handleExportPdf}
 							value="Export PDF"
+							loading={isExportingPdf}
 							variant="contained"
 							sx={{
 								minWidth: '120px',
@@ -428,6 +433,9 @@ export const ReceiversTable: FC<ReceiversTableProps> = ({
 	const t = useTranslation();
 	const gridRef = useRef<AgGridReact>(null);
 	const [receiverIdSearch, setReceiverIdSearch] = useState('');
+	const [isExportingFilteredPdf, setIsExportingFilteredPdf] = useState(false);
+	const [isPrintingFilteredReceivers, setIsPrintingFilteredReceivers] = useState(false);
+	const [displayedRowCount, setDisplayedRowCount] = useState(0);
 
 	// Fetch ALL receivers (unfiltered) for dropdown options
 	const { data: allReceiversData } = useGetAllReceivers({
@@ -520,8 +528,32 @@ export const ReceiversTable: FC<ReceiversTableProps> = ({
 		return visibleReceiverIds;
 	};
 
+	const updateDisplayedRowCount = () => {
+		setDisplayedRowCount(gridRef.current?.api.getDisplayedRowCount() ?? rowData.length);
+	};
+
+	useEffect(() => {
+		const frameId = window.requestAnimationFrame(updateDisplayedRowCount);
+		return () => window.cancelAnimationFrame(frameId);
+	}, [rowData]);
+
+	const handleClearAllFilters = () => {
+		setSelectedReceiver('');
+		setSelectedSubCategory('');
+		setReceiverIdSearch('');
+		gridRef.current?.api.setFilterModel(null);
+		window.requestAnimationFrame(updateDisplayedRowCount);
+	};
+
+	const hasActiveFilters =
+		Boolean(selectedReceiver) ||
+		Boolean(selectedSubCategory) ||
+		Boolean(receiverIdSearch.trim()) ||
+		Boolean(gridRef.current?.api.isAnyFilterPresent());
+
 	const handleExportFilteredPdf = async () => {
 		try {
+			setIsExportingFilteredPdf(true);
 			const visibleReceiverIds = getVisibleReceiverIds();
 			if (visibleReceiverIds.length === 0) {
 				showToast('No receivers match the current filters.', 'error');
@@ -561,11 +593,14 @@ export const ReceiversTable: FC<ReceiversTableProps> = ({
 		} catch (err) {
 			console.error('Failed to export PDF:', err);
 			showToast('Failed to export PDF', 'error');
+		} finally {
+			setIsExportingFilteredPdf(false);
 		}
 	};
 
 	const handlePrintFilteredReceivers = async () => {
 		try {
+			setIsPrintingFilteredReceivers(true);
 			const visibleReceiverIds = getVisibleReceiverIds();
 			if (visibleReceiverIds.length === 0) {
 				showToast('No receivers match the current filters.', 'error');
@@ -599,6 +634,8 @@ export const ReceiversTable: FC<ReceiversTableProps> = ({
 		} catch (err) {
 			console.error('Failed to generate PDF:', err);
 			showToast('Failed to generate PDF', 'error');
+		} finally {
+			setIsPrintingFilteredReceivers(false);
 		}
 	};
 
@@ -643,24 +680,6 @@ export const ReceiversTable: FC<ReceiversTableProps> = ({
 
 	return (
 		<div className={classes('ag-theme-quartz', styles.container)} style={{ height: 650, position: 'relative' }}>
-			{isLoading && (
-				<Box
-					sx={{
-						position: 'absolute',
-						top: 0,
-						left: 0,
-						right: 0,
-						bottom: 0,
-						background: 'rgba(255,255,255,0.6)',
-						display: 'flex',
-						alignItems: 'center',
-						justifyContent: 'center',
-						zIndex: 3,
-					}}
-				>
-					<Box className="loading-spinner" />
-				</Box>
-			)}
 			<Box sx={{ display: 'flex', gap: 2, mb: 2, justifyContent: 'space-between', alignItems: 'center' }}>
 				<Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap' }}>
 					<TextField
@@ -704,6 +723,7 @@ export const ReceiversTable: FC<ReceiversTableProps> = ({
 					<AppButton
 						onClick={handlePrintFilteredReceivers}
 						value="Print Table"
+						loading={isPrintingFilteredReceivers}
 						variant="outlined"
 						sx={{
 							minWidth: '120px',
@@ -715,6 +735,7 @@ export const ReceiversTable: FC<ReceiversTableProps> = ({
 					<AppButton
 						onClick={handleExportFilteredPdf}
 						value="Export PDF"
+						loading={isExportingFilteredPdf}
 						variant="contained"
 						sx={{
 							minWidth: '120px',
@@ -726,19 +747,31 @@ export const ReceiversTable: FC<ReceiversTableProps> = ({
 				</Box>
 			</Box>
 
-			<AgGridReact
-				ref={gridRef}
-				rowData={rowData}
-				columnDefs={colDefs}
-				defaultColDef={{
-					filter: true,
-				}}
-				columnHoverHighlight
-				pagination
-				paginationPageSize={20}
-				paginationPageSizeSelector={[15, 20, 30, 50, 100]}
-				context={{ receiverDtoMap, showToast }}
-			/>
+			<Box sx={{ position: 'relative', height: 'calc(100% - 74px)' }}>
+				<AgGridReact
+					ref={gridRef}
+					rowData={rowData}
+					columnDefs={colDefs}
+					defaultColDef={{
+						filter: true,
+					}}
+					columnHoverHighlight
+					pagination
+					paginationPageSize={20}
+					paginationPageSizeSelector={[15, 20, 30, 50, 100]}
+					context={{ receiverDtoMap, showToast }}
+					onFilterChanged={updateDisplayedRowCount}
+					onModelUpdated={updateDisplayedRowCount}
+				/>
+				{isLoading ? <TableStateOverlay mode="loading" message="Loading receivers report..." /> : null}
+				{!isLoading && displayedRowCount === 0 ? (
+					<TableStateOverlay
+						mode="empty"
+						message={hasActiveFilters ? 'No receivers match the current filters.' : 'No receivers report data available yet.'}
+						onClear={hasActiveFilters ? handleClearAllFilters : undefined}
+					/>
+				) : null}
+			</Box>
 		</div>
 	);
 };

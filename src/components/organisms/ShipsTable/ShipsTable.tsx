@@ -4,8 +4,8 @@ import 'ag-grid-community/styles/ag-grid.css';
 import 'ag-grid-community/styles/ag-theme-quartz.css';
 import { AgGridReact, CustomCellRendererProps } from 'ag-grid-react';
 import dayjs, { Dayjs } from 'dayjs';
-import { FC, useMemo, useRef, useState } from 'react';
-import { AppButton, DocumentViewer } from '~components/atoms';
+import { FC, useEffect, useMemo, useRef, useState } from 'react';
+import { AppButton, DocumentViewer, TableStateOverlay } from '~components/atoms';
 import { classes } from '~helpers';
 import { CONSTANTS } from '~helpers/constants';
 import { useTranslation } from '~i18n';
@@ -1369,6 +1369,8 @@ export const ShipsTable: FC<ShipsTableProps> = ({
 }) => {
 	const t = useTranslation();
 	const gridRef = useRef<AgGridReact>(null);
+	const [isExportingPdf, setIsExportingPdf] = useState(false);
+	const [displayedRowCount, setDisplayedRowCount] = useState(0);
 
 
 	const shipDtoMap = useMemo(() => {
@@ -1473,9 +1475,46 @@ export const ShipsTable: FC<ShipsTableProps> = ({
 		return visibleShipIds;
 	};
 
+	const updateDisplayedRowCount = () => {
+		setDisplayedRowCount(gridRef.current?.api.getDisplayedRowCount() ?? rowData.length);
+	};
+
+	useEffect(() => {
+		const frameId = window.requestAnimationFrame(updateDisplayedRowCount);
+		return () => window.cancelAnimationFrame(frameId);
+	}, [rowData]);
+
+	const handleClearAllFilters = () => {
+		setSelectedPort('');
+		setSelectedReceiver('');
+		setSelectedSubCategory('');
+		setSelectedCategory('');
+		setDwtFrom('');
+		setDwtTo('');
+		onClearDates();
+		gridRef.current?.api.setFilterModel(null);
+		window.requestAnimationFrame(updateDisplayedRowCount);
+	};
+
+	const hasActiveFilters =
+		Boolean(selectedPort) ||
+		Boolean(selectedReceiver) ||
+		Boolean(selectedSubCategory) ||
+		Boolean(selectedCategory) ||
+		Boolean(dwtFrom) ||
+		Boolean(dwtTo) ||
+		Boolean(dateFrom) ||
+		Boolean(dateTo) ||
+		Boolean(gridRef.current?.api.isAnyFilterPresent());
+
 	const exportPdfData = async () => {
 		try {
+			setIsExportingPdf(true);
 			const visibleShipIds = getVisibleShipIds();
+			const hasClientSideExportFilters =
+				Boolean(dwtFrom) ||
+				Boolean(dwtTo) ||
+				Boolean(gridRef.current?.api.isAnyFilterPresent());
 
 			if (visibleShipIds.length === 0) {
 				showToast('No ships match the current filters.', 'error');
@@ -1490,11 +1529,13 @@ export const ShipsTable: FC<ShipsTableProps> = ({
 				dateFrom ? dateFrom.format('YYYY-MM-DD') : undefined,
 				dateTo ? dateTo.format('YYYY-MM-DD') : undefined,
 				selectedCategory || undefined,
-				visibleShipIds
+				hasClientSideExportFilters ? visibleShipIds : undefined
 			);
 		} catch (error) {
 			console.error('Error exporting PDF:', error);
 			showToast('Failed to export PDF. Please try again.', 'error');
+		} finally {
+			setIsExportingPdf(false);
 		}
 	};
 
@@ -1532,24 +1573,6 @@ export const ShipsTable: FC<ShipsTableProps> = ({
 
 	return (
 		<div className={classes('ag-theme-quartz', styles.container)} style={{ height: 650, position: 'relative' }}>
-			{isLoading && (
-				<Box
-					sx={{
-						position: 'absolute',
-						top: 0,
-						left: 0,
-						right: 0,
-						bottom: 0,
-						background: 'rgba(255,255,255,0.6)',
-						display: 'flex',
-						alignItems: 'center',
-						justifyContent: 'center',
-						zIndex: 3,
-					}}
-				>
-					<Box className="loading-spinner" />
-				</Box>
-			)}
 			<Box sx={{ display: 'flex', gap: 2, mb: 2, flexWrap: 'wrap', alignItems: 'center' }}>
 				<Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap' }}>
 					<LocalizationProvider dateAdapter={AdapterDayjs}>
@@ -1663,24 +1686,37 @@ export const ShipsTable: FC<ShipsTableProps> = ({
 						variant="outlined"
 						value={t('common.exportPdf')}
 						className={styles.tableExportButton}
+						loading={isExportingPdf}
 						onClick={exportPdfData}
 					/>
 				</Box>
 			</Box>
 
-			<AgGridReact
-				ref={gridRef}
-				rowData={rowData}
-				columnDefs={colDefs}
-				defaultColDef={{
-					filter: true,
-				}}
-				columnHoverHighlight
-				pagination
-				paginationPageSize={20}
-				paginationPageSizeSelector={[15, 20, 30, 50, 100]}
-				context={{ shipDtoMap, showToast }}
-			/>
+			<Box sx={{ position: 'relative', height: 'calc(100% - 74px)' }}>
+				<AgGridReact
+					ref={gridRef}
+					rowData={rowData}
+					columnDefs={colDefs}
+					defaultColDef={{
+						filter: true,
+					}}
+					columnHoverHighlight
+					pagination
+					paginationPageSize={20}
+					paginationPageSizeSelector={[15, 20, 30, 50, 100]}
+					context={{ shipDtoMap, showToast }}
+					onFilterChanged={updateDisplayedRowCount}
+					onModelUpdated={updateDisplayedRowCount}
+				/>
+				{isLoading ? <TableStateOverlay mode="loading" message="Loading ship report..." /> : null}
+				{!isLoading && displayedRowCount === 0 ? (
+					<TableStateOverlay
+						mode="empty"
+						message={hasActiveFilters ? 'No ships match the current filters.' : 'No ship reports available yet.'}
+						onClear={hasActiveFilters ? handleClearAllFilters : undefined}
+					/>
+				) : null}
+			</Box>
 		</div>
 	);
 };

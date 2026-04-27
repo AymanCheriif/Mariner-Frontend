@@ -3,8 +3,8 @@ import { ColDef } from 'ag-grid-community';
 import 'ag-grid-community/styles/ag-grid.css';
 import 'ag-grid-community/styles/ag-theme-quartz.css';
 import { AgGridReact, CustomCellRendererProps } from 'ag-grid-react';
-import { FC, useMemo, useRef, useState } from 'react';
-import { AppButton } from '~components/atoms';
+import { FC, useEffect, useMemo, useRef, useState } from 'react';
+import { AppButton, TableStateOverlay } from '~components/atoms';
 import { classes } from '~helpers';
 import { API_BASE_URL } from '~services/urls';
 import { SubCategorySummaryDTO } from '~services/subcategories/types';
@@ -27,6 +27,7 @@ const mapSubCategoryToRow = (dto: SubCategorySummaryDTO): SubCategoryRow => {
 
 const renderSubCategory = (data: CustomCellRendererProps<SubCategoryRow>) => {
 	const [openModal, setOpenModal] = useState(false);
+	const [isExportingPdf, setIsExportingPdf] = useState(false);
 	const subCategoryData = data.context.subCategoryMap.get(data.data?.subCategory);
 
 	const handleDoubleClick = () => {
@@ -39,6 +40,7 @@ const renderSubCategory = (data: CustomCellRendererProps<SubCategoryRow>) => {
 
 	const handleExportPdf = async () => {
 		try {
+			setIsExportingPdf(true);
 			const token = localStorage.getItem('ACCESS_TOKEN');
 			const subCategoryEncoded = encodeURIComponent(subCategoryData.subCategory);
 			const url = `${API_BASE_URL}/subcategories/${subCategoryEncoded}/export-pdf`;
@@ -67,6 +69,8 @@ const renderSubCategory = (data: CustomCellRendererProps<SubCategoryRow>) => {
 		} catch (err) {
 			console.error('Failed to export PDF:', err);
 			data.context.showToast?.('Failed to export PDF', 'error');
+		} finally {
+			setIsExportingPdf(false);
 		}
 	};
 
@@ -168,6 +172,7 @@ const renderSubCategory = (data: CustomCellRendererProps<SubCategoryRow>) => {
 						<AppButton
 							onClick={handleExportPdf}
 							value="Export PDF"
+							loading={isExportingPdf}
 							variant="contained"
 							sx={{ minWidth: '120px', fontWeight: 600, borderRadius: '8px', textTransform: 'none' }}
 						/>
@@ -196,6 +201,8 @@ export const SubCategoriesTable: FC<SubCategoriesTableProps> = ({
 	showToast,
 }) => {
 	const gridRef = useRef<AgGridReact>(null);
+	const [isExportingFilteredPdf, setIsExportingFilteredPdf] = useState(false);
+	const [displayedRowCount, setDisplayedRowCount] = useState(0);
 
 	const subCategoryMap = useMemo(() => {
 		const map = new Map<string, SubCategorySummaryDTO>();
@@ -218,8 +225,25 @@ export const SubCategoriesTable: FC<SubCategoriesTableProps> = ({
 		return visibleSubCategories;
 	};
 
+	const updateDisplayedRowCount = () => {
+		setDisplayedRowCount(gridRef.current?.api.getDisplayedRowCount() ?? rowData.length);
+	};
+
+	useEffect(() => {
+		const frameId = window.requestAnimationFrame(updateDisplayedRowCount);
+		return () => window.cancelAnimationFrame(frameId);
+	}, [rowData]);
+
+	const handleClearAllFilters = () => {
+		gridRef.current?.api.setFilterModel(null);
+		window.requestAnimationFrame(updateDisplayedRowCount);
+	};
+
+	const hasActiveFilters = Boolean(gridRef.current?.api.isAnyFilterPresent());
+
 	const handleExportFilteredPdf = async () => {
 		try {
+			setIsExportingFilteredPdf(true);
 			const visibleSubCategories = getVisibleSubCategories();
 
 			if (visibleSubCategories.length === 0) {
@@ -257,6 +281,8 @@ export const SubCategoriesTable: FC<SubCategoriesTableProps> = ({
 		} catch (err) {
 			console.error('Failed to export PDF:', err);
 			showToast('Failed to export PDF', 'error');
+		} finally {
+			setIsExportingFilteredPdf(false);
 		}
 	};
 
@@ -286,49 +312,44 @@ export const SubCategoriesTable: FC<SubCategoriesTableProps> = ({
 
 	return (
 		<div className={classes('ag-theme-quartz', styles.container)} style={{ height: 600, position: 'relative' }}>
-			{isLoading && (
-				<Box
-					sx={{
-						position: 'absolute',
-						top: 0,
-						left: 0,
-						right: 0,
-						bottom: 0,
-						background: 'rgba(255,255,255,0.6)',
-						display: 'flex',
-						alignItems: 'center',
-						justifyContent: 'center',
-						zIndex: 3,
-					}}
-				>
-					<Box className="loading-spinner" />
-				</Box>
-			)}
 
 			<Box sx={{ display: 'flex', justifyContent: 'flex-end', mb: 2 }}>
 				<AppButton
 					onClick={handleExportFilteredPdf}
 					value="Export PDF"
+					loading={isExportingFilteredPdf}
 					variant="contained"
 					sx={{ minWidth: '120px', fontWeight: 600, borderRadius: '8px', textTransform: 'none' }}
 				/>
 			</Box>
 
-			<AgGridReact
-				ref={gridRef}
-				rowData={rowData}
-				columnDefs={colDefs}
-				defaultColDef={{
-					filter: true,
-					sortable: true,
-					resizable: true,
-				}}
-				columnHoverHighlight
-				pagination
-				paginationPageSize={20}
-				paginationPageSizeSelector={[15, 20, 30, 50, 100]}
-				context={{ subCategoryMap, showToast }}
-			/>
+			<Box sx={{ position: 'relative', height: 'calc(100% - 58px)' }}>
+				<AgGridReact
+					ref={gridRef}
+					rowData={rowData}
+					columnDefs={colDefs}
+					defaultColDef={{
+						filter: true,
+						sortable: true,
+						resizable: true,
+					}}
+					columnHoverHighlight
+					pagination
+					paginationPageSize={20}
+					paginationPageSizeSelector={[15, 20, 30, 50, 100]}
+					context={{ subCategoryMap, showToast }}
+					onFilterChanged={updateDisplayedRowCount}
+					onModelUpdated={updateDisplayedRowCount}
+				/>
+				{isLoading ? <TableStateOverlay mode="loading" message="Loading sub-categories report..." /> : null}
+				{!isLoading && displayedRowCount === 0 ? (
+					<TableStateOverlay
+						mode="empty"
+						message={hasActiveFilters ? 'No sub-categories match the current filters.' : 'No sub-categories report data available yet.'}
+						onClear={hasActiveFilters ? handleClearAllFilters : undefined}
+					/>
+				) : null}
+			</Box>
 		</div>
 	);
 };

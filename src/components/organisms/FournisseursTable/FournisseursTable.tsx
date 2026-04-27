@@ -3,8 +3,8 @@ import { ColDef } from 'ag-grid-community';
 import 'ag-grid-community/styles/ag-grid.css';
 import 'ag-grid-community/styles/ag-theme-quartz.css';
 import { AgGridReact, CustomCellRendererProps } from 'ag-grid-react';
-import { FC, useMemo, useRef, useState } from 'react';
-import { AppButton } from '~components/atoms';
+import { FC, useEffect, useMemo, useRef, useState } from 'react';
+import { AppButton, TableStateOverlay } from '~components/atoms';
 import { classes } from '~helpers';
 import { useGetAllFournisseurs } from '~hooks/fournisseurs';
 import { useTranslation } from '~i18n';
@@ -39,6 +39,7 @@ const mapFournisseurToRow = (dto: FournisseurSummaryDTO): FournisseurRow => {
 
 const renderFournisseurName = (data: CustomCellRendererProps<FournisseurRow>) => {
 	const [openModal, setOpenModal] = useState(false);
+	const [isExportingPdf, setIsExportingPdf] = useState(false);
 	const fournisseurData = data.context.fournisseurMap.get(data.data?.fournisseurId);
 
 	const handleDoubleClick = () => {
@@ -51,6 +52,7 @@ const renderFournisseurName = (data: CustomCellRendererProps<FournisseurRow>) =>
 
 	const handleExportPdf = async () => {
 		try {
+			setIsExportingPdf(true);
 			const token = localStorage.getItem('ACCESS_TOKEN');
 			const url = `${API_BASE_URL}/fournisseurs/${data.data?.fournisseurId}/export-pdf`;
 
@@ -78,6 +80,8 @@ const renderFournisseurName = (data: CustomCellRendererProps<FournisseurRow>) =>
 		} catch (err) {
 			console.error('Failed to export PDF:', err);
 			data.context.showToast?.('Failed to export PDF', 'error');
+		} finally {
+			setIsExportingPdf(false);
 		}
 	};
 
@@ -209,6 +213,7 @@ const renderFournisseurName = (data: CustomCellRendererProps<FournisseurRow>) =>
 						<AppButton
 							onClick={handleExportPdf}
 							value="Export PDF"
+							loading={isExportingPdf}
 							variant="contained"
 							sx={{ minWidth: '120px', fontWeight: 600, borderRadius: '8px', textTransform: 'none' }}
 						/>
@@ -247,6 +252,9 @@ export const FournisseursTable: FC<FournisseursTableProps> = ({
 	const t = useTranslation();
 	const gridRef = useRef<AgGridReact>(null);
 	const { data: allFournisseursData } = useGetAllFournisseurs();
+	const [isExportingFilteredPdf, setIsExportingFilteredPdf] = useState(false);
+	const [isPrintingFilteredFournisseurs, setIsPrintingFilteredFournisseurs] = useState(false);
+	const [displayedRowCount, setDisplayedRowCount] = useState(0);
 
 	const fournisseurMap = useMemo(() => {
 		const map = new Map<string, FournisseurSummaryDTO>();
@@ -289,8 +297,30 @@ export const FournisseursTable: FC<FournisseursTableProps> = ({
 		return visibleFournisseurIds;
 	};
 
+	const updateDisplayedRowCount = () => {
+		setDisplayedRowCount(gridRef.current?.api.getDisplayedRowCount() ?? rowData.length);
+	};
+
+	useEffect(() => {
+		const frameId = window.requestAnimationFrame(updateDisplayedRowCount);
+		return () => window.cancelAnimationFrame(frameId);
+	}, [rowData]);
+
+	const handleClearAllFilters = () => {
+		setSelectedFournisseur('');
+		setSelectedSubCategory('');
+		gridRef.current?.api.setFilterModel(null);
+		window.requestAnimationFrame(updateDisplayedRowCount);
+	};
+
+	const hasActiveFilters =
+		Boolean(selectedFournisseur) ||
+		Boolean(selectedSubCategory) ||
+		Boolean(gridRef.current?.api.isAnyFilterPresent());
+
 	const handleExportFilteredPdf = async () => {
 		try {
+			setIsExportingFilteredPdf(true);
 			const visibleFournisseurIds = getVisibleFournisseurIds();
 			if (visibleFournisseurIds.length === 0) {
 				showToast('No fournisseurs match the current filters.', 'error');
@@ -330,11 +360,14 @@ export const FournisseursTable: FC<FournisseursTableProps> = ({
 		} catch (err) {
 			console.error('Failed to export PDF:', err);
 			showToast('Failed to export PDF', 'error');
+		} finally {
+			setIsExportingFilteredPdf(false);
 		}
 	};
 
 	const handlePrintFilteredFournisseurs = async () => {
 		try {
+			setIsPrintingFilteredFournisseurs(true);
 			const visibleFournisseurIds = getVisibleFournisseurIds();
 			if (visibleFournisseurIds.length === 0) {
 				showToast('No fournisseurs match the current filters.', 'error');
@@ -368,6 +401,8 @@ export const FournisseursTable: FC<FournisseursTableProps> = ({
 		} catch (err) {
 			console.error('Failed to generate PDF:', err);
 			showToast('Failed to generate PDF', 'error');
+		} finally {
+			setIsPrintingFilteredFournisseurs(false);
 		}
 	};
 
@@ -392,24 +427,6 @@ export const FournisseursTable: FC<FournisseursTableProps> = ({
 
 	return (
 		<div className={classes('ag-theme-quartz', styles.container)} style={{ height: 600, position: 'relative' }}>
-			{isLoading && (
-				<Box
-					sx={{
-						position: 'absolute',
-						top: 0,
-						left: 0,
-						right: 0,
-						bottom: 0,
-						background: 'rgba(255,255,255,0.6)',
-						display: 'flex',
-						alignItems: 'center',
-						justifyContent: 'center',
-						zIndex: 3,
-					}}
-				>
-					<Box className="loading-spinner" />
-				</Box>
-			)}
 
 			<Box sx={{ mb: 2, display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 2 }}>
 				<Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap' }}>
@@ -442,33 +459,47 @@ export const FournisseursTable: FC<FournisseursTableProps> = ({
 					<AppButton
 						onClick={handlePrintFilteredFournisseurs}
 						value="Print Table"
+						loading={isPrintingFilteredFournisseurs}
 						variant="outlined"
 						sx={{ minWidth: '120px', fontWeight: 600, borderRadius: '8px', textTransform: 'none' }}
 					/>
 					<AppButton
 						onClick={handleExportFilteredPdf}
 						value="Export PDF"
+						loading={isExportingFilteredPdf}
 						variant="contained"
 						sx={{ minWidth: '120px', fontWeight: 600, borderRadius: '8px', textTransform: 'none' }}
 					/>
 				</Box>
 			</Box>
 
-			<AgGridReact
-				ref={gridRef}
-				rowData={rowData}
-				columnDefs={colDefs}
-				defaultColDef={{
-					filter: true,
-					sortable: true,
-					resizable: true,
-				}}
-				columnHoverHighlight
-				pagination
-				paginationPageSize={20}
-				paginationPageSizeSelector={[15, 20, 30, 50, 100]}
-				context={{ fournisseurMap, showToast }}
-			/>
+			<Box sx={{ position: 'relative', height: 'calc(100% - 74px)' }}>
+				<AgGridReact
+					ref={gridRef}
+					rowData={rowData}
+					columnDefs={colDefs}
+					defaultColDef={{
+						filter: true,
+						sortable: true,
+						resizable: true,
+					}}
+					columnHoverHighlight
+					pagination
+					paginationPageSize={20}
+					paginationPageSizeSelector={[15, 20, 30, 50, 100]}
+					context={{ fournisseurMap, showToast }}
+					onFilterChanged={updateDisplayedRowCount}
+					onModelUpdated={updateDisplayedRowCount}
+				/>
+				{isLoading ? <TableStateOverlay mode="loading" message="Loading fournisseurs report..." /> : null}
+				{!isLoading && displayedRowCount === 0 ? (
+					<TableStateOverlay
+						mode="empty"
+						message={hasActiveFilters ? 'No fournisseurs match the current filters.' : 'No fournisseurs report data available yet.'}
+						onClear={hasActiveFilters ? handleClearAllFilters : undefined}
+					/>
+				) : null}
+			</Box>
 		</div>
 	);
 };
