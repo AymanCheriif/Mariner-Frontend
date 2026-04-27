@@ -61,6 +61,7 @@ const addCargaisonSchema = z.object({
 	receiverMIC: z.string().optional(),
 	receiverName: z.string(),
 	receiverEmail: optionalEmail,
+	receiverPhoneFixe: z.string().optional(),
 	receiverPhoneMobile: z.string().optional(),
 	// Fournisseur fields
 	fournisseurId: z.string().optional(), // For selecting existing fournisseur
@@ -158,6 +159,7 @@ const defaultCargaisonValues: AddOurShipRequest['cargoes'][number] = {
 	receiverMIC: '',
 	receiverName: '',
 	receiverEmail: '',
+	receiverPhoneFixe: '',
 	receiverPhoneMobile: '',
 	// Fournisseur fields
 	fournisseurId: undefined,

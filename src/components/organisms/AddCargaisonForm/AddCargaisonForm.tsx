@@ -223,6 +223,7 @@ export const AddCargaisonForm: FC<Props> = ({ isUpdate }) => {
 										setValue(`cargoes.${index}.receiverId`, undefined);
 										setValue(`cargoes.${index}.receiverName`, '');
 										setValue(`cargoes.${index}.receiverEmail`, '');
+											setValue(`cargoes.${index}.receiverPhoneFixe`, '');
 										setValue(`cargoes.${index}.receiverPhoneMobile`, '');
 										setValue(`cargoes.${index}.receiverMIC`, '');
 									}}
@@ -240,6 +241,7 @@ export const AddCargaisonForm: FC<Props> = ({ isUpdate }) => {
 										setValue(`cargoes.${index}.receiverId`, undefined);
 										setValue(`cargoes.${index}.receiverName`, '');
 										setValue(`cargoes.${index}.receiverEmail`, '');
+											setValue(`cargoes.${index}.receiverPhoneFixe`, '');
 										setValue(`cargoes.${index}.receiverPhoneMobile`, '');
 										setValue(`cargoes.${index}.receiverMIC`, '');
 									}}
@@ -271,6 +273,7 @@ export const AddCargaisonForm: FC<Props> = ({ isUpdate }) => {
 													if (value) {
 														setValue(`cargoes.${index}.receiverName`, value.receiverName);
 														setValue(`cargoes.${index}.receiverEmail`, value.receiverEmail || '');
+														setValue(`cargoes.${index}.receiverPhoneFixe`, value.receiverPhoneFixe || '');
 														setValue(`cargoes.${index}.receiverPhoneMobile`, value.receiverPhoneMobile || '');
 														setValue(`cargoes.${index}.receiverMIC`, ''); // MIC not available in summary
 													}
@@ -295,6 +298,19 @@ export const AddCargaisonForm: FC<Props> = ({ isUpdate }) => {
 											control={control}
 											render={({ field, fieldState }) => (
 												<Input muiLabel={t('form.receiverEmail.label')} error={fieldState.error} {...field} />
+											)}
+										/>
+
+										<Controller
+											name={`cargoes.${index}.receiverPhoneFixe`}
+											control={control}
+											render={({ field, fieldState }) => (
+												<Input
+													muiLabel={t('form.phoneFixe.label')}
+													error={fieldState.error}
+													{...field}
+													className={styles.smallField}
+												/>
 											)}
 										/>
 

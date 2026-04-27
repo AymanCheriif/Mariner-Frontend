@@ -110,11 +110,13 @@ export const mapShipDTOToAddOurShipForm = (dto: ShipDTO): AddOurShipRequest => {
 			subCategory: c.subCategory ?? '',
 			tonnage: c.tonnage ?? '',
 			// Receiver fields
+			receiverMIC: c.receiverMIC ?? '',
 			receiverName: c.receiverName ?? '',
 			receiverEmail: c.receiverEmail ?? '',
 			receiverPhoneFixe: c.receiverPhoneFixe ?? '',
 			receiverPhoneMobile: c.receiverPhoneMobile ?? '',
 			// Fournisseur fields
+			fournisseurMIC: c.fournisseurMIC ?? '',
 			fournisseurName: c.fournisseurName ?? '',
 			fournisseurEmail: c.fournisseurEmail ?? '',
 			fournisseurPhoneFixe: c.fournisseurPhoneFixe ?? '',
