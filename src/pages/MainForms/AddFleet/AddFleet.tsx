@@ -28,7 +28,7 @@ export const AddFleetPage: FC = () => {
 		});
 	};
 
-	const { onSubmit, formMethods } = useAddShip({ isFleet: true, onCreated: handleFleetCreated });
+	const { onSubmit, formMethods, isRequestLoading, isSubmitDisabled } = useAddShip({ isFleet: true, onCreated: handleFleetCreated });
 
 	return (
 		<form className={styles.container} onSubmit={onSubmit}>
@@ -52,7 +52,13 @@ export const AddFleetPage: FC = () => {
 				</div>
 
 				<div className={styles.submitButtonContainer}>
-					<AppButton value={t('common.submit')} type="submit" className={styles.submitButton} />
+					<AppButton
+						value={isRequestLoading ? 'Adding...' : t('common.submit')}
+						type="submit"
+						className={styles.submitButton}
+						loading={isRequestLoading}
+						disabled={isSubmitDisabled}
+					/>
 				</div>
 			</FormProvider>
 		</form>

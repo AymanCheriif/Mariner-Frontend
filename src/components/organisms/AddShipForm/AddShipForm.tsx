@@ -1,4 +1,4 @@
-import { FC, useEffect } from 'react';
+import { FC } from 'react';
 import { Controller, useFormContext, useWatch } from 'react-hook-form';
 import { Autocomplete, TextField } from '@mui/material';
 import { AppCard, AppDatePicker, AppSelect, Input } from '~components/atoms';
@@ -17,20 +17,13 @@ interface Props {
 
 export const AddShipForm: FC<Props> = ({ isAgent, isUpdate, isFleet = false }) => {
 	const t = useTranslation();
-	const { control, formState, setValue } = useFormContext<AddOurShipRequest>();
+	const { control, formState } = useFormContext<AddOurShipRequest>();
 
 	const isFormError = formState.errors.addShip !== undefined;
 
 	// Show agent field if explicitly requested (isAgent) OR if the form already has an agent value (e.g., update mode)
 	const agentValue = useWatch({ control, name: 'addShip.agent' });
 	const showAgent = Boolean(isAgent || (isUpdate && agentValue && String(agentValue).trim().length > 0));
-
-	// Automatically set agent to "navlion" when isAgent is true and not in update mode
-	useEffect(() => {
-		if (isAgent && !isUpdate) {
-			setValue('addShip.agent', 'navlion', { shouldDirty: true, shouldValidate: true });
-		}
-	}, [isAgent, isUpdate, setValue]);
 
 	return (
 		<AppCard title={isUpdate ? t('common.updateShip') : t('common.addShip')} isError={isFormError}>

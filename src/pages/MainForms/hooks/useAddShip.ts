@@ -12,15 +12,21 @@ import { mapShipFormToShipDTO } from './mappers';
 interface UseAddShipProps {
 	onCreated?: (id: string) => void;
 	isFleet?: boolean;
+	defaultAgent?: string;
 }
 
-export const useAddShip = ({ onCreated, isFleet = false }: UseAddShipProps = {}) => {
+export const useAddShip = ({ onCreated, isFleet = false, defaultAgent }: UseAddShipProps = {}) => {
 	// Use the appropriate schema based on isFleet flag
 	const schema = isFleet ? addFleetShipFormSchema : addOurShipSchema;
 
-	const defaultValues = isFleet
-		? { ...defaultAddOurShipFormValues, addShip: { ...defaultAddOurShipFormValues.addShip, agent: '' } }
-		: defaultAddOurShipFormValues;
+	const resolvedDefaultAgent = defaultAgent ?? (isFleet ? '' : defaultAddOurShipFormValues.addShip.agent);
+	const defaultValues = {
+		...defaultAddOurShipFormValues,
+		addShip: {
+			...defaultAddOurShipFormValues.addShip,
+			agent: resolvedDefaultAgent,
+		},
+	};
 
 	const formMethods = useForm<AddOurShipRequest>({
 		defaultValues,

@@ -137,6 +137,9 @@ export const AddOurShipPage: FC = () => {
 	});
 
 	const isPrimaryLoading = isUpdateMode ? isUpdating : isRequestLoading;
+	const isPrimaryDisabled = isUpdateMode
+		? isUpdating || !formMethods.formState.isValid || !formMethods.formState.isDirty
+		: addShipHook.isSubmitDisabled;
 	const primaryLabel = isUpdateMode
 		? isUpdating
 			? 'Updating...'
@@ -144,9 +147,6 @@ export const AddOurShipPage: FC = () => {
 		: isRequestLoading
 			? 'Adding...'
 			: t('common.submit');
-	// const primaryDisabled = isUpdateMode
-	// 	? isUpdating || !formMethods.formState.isValid || !formMethods.formState.isDirty
-	// 	: isSubmitDisabled;
 
 	return (
 		<form className={styles.container} onSubmit={isUpdateMode ? onSubmitUpdate : addShipHook.onSubmit}>
@@ -159,9 +159,9 @@ export const AddOurShipPage: FC = () => {
 					</Box>
 				</Backdrop>
 
-				<AddShipForm isUpdate={isUpdateMode} />
+				<AddShipForm isUpdate={isUpdateMode} isFleet={isFleet} />
 
-				<AddCargaisonForm isUpdate={isUpdateMode} />
+				{!isFleet ? <AddCargaisonForm isUpdate={isUpdateMode} /> : null}
 
 				<div className={styles.row}>
 					{isUpdateMode ? (
@@ -189,11 +189,13 @@ export const AddOurShipPage: FC = () => {
 						placeholder={t('form.yourNotes.label')}
 						formName="remarksAndFacts"
 					/>
-					<AddTextAreaForm
-						title={t('common.performanceRate')}
-						placeholder={t('form.performanceRateFunction')}
-						formName="performanceRate"
-					/>
+					{!isFleet ? (
+						<AddTextAreaForm
+							title={t('common.performanceRate')}
+							placeholder={t('form.performanceRateFunction')}
+							formName="performanceRate"
+						/>
+					) : null}
 				</div>
 
 				<div className={styles.submitButtonContainer}>
@@ -209,7 +211,8 @@ export const AddOurShipPage: FC = () => {
 						value={primaryLabel}
 						type="submit"
 						className={styles.submitButton}
-						startIcon={isPrimaryLoading ? <CircularProgress size={16} color="inherit" /> : undefined}
+						loading={isPrimaryLoading}
+						disabled={isPrimaryDisabled}
 						style={!isUpdateMode ? { marginLeft: 'auto' } : { marginRight: 0 }}
 					/>
 				</div>

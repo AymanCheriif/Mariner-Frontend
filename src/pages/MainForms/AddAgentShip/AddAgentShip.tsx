@@ -14,7 +14,7 @@ import styles from './AddAgentShip.module.css';
 
 export const AddAgentShipPage: FC = () => {
 	const t = useTranslation();
-	const { onSubmit, formMethods } = useAddShip();
+	const { onSubmit, formMethods, isRequestLoading, isSubmitDisabled } = useAddShip({ defaultAgent: '' });
 
 	return (
 		<form className={styles.container} onSubmit={onSubmit}>
@@ -45,7 +45,13 @@ export const AddAgentShipPage: FC = () => {
 				</div>
 
 				<div className={styles.submitButtonContainer}>
-					<AppButton value={t('common.submit')} type="submit" className={styles.submitButton} />
+					<AppButton
+						value={isRequestLoading ? 'Adding...' : t('common.submit')}
+						type="submit"
+						className={styles.submitButton}
+						loading={isRequestLoading}
+						disabled={isSubmitDisabled}
+					/>
 				</div>
 			</FormProvider>
 		</form>
