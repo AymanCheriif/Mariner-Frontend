@@ -45,7 +45,7 @@ const mapReceiverSummaryToRow = (dto: ReceiverSummaryDTO): ReceiverRow => {
 const renderActions = (data: CustomCellRendererProps<ReceiverRow>) => {
 	const [openDetailsModal, setOpenDetailsModal] = useState(false);
 
-	const receiverData = data.context.receiverDtoMap.get(data.data?.receiverName);
+	const receiverData = data.context.receiverDtoMap.get(data.data?.receiverId);
 
 	if (!receiverData) {
 		return null;
@@ -469,7 +469,7 @@ export const ReceiversTable: FC<ReceiversTableProps> = ({
 
 	const receiverDtoMap = useMemo(() => {
 		const map = new Map<string, ReceiverSummaryDTO>();
-		data?.forEach((receiver) => map.set(receiver.receiverName, receiver));
+		data?.forEach((receiver) => map.set(receiver.receiverId, receiver));
 		return map;
 	}, [data]);
 
