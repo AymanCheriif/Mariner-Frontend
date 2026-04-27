@@ -64,13 +64,15 @@ const renderActions = (data: CustomCellRendererProps<ReceiverRow>) => {
 		try {
 			setIsExportingPdf(true);
 			const token = localStorage.getItem('ACCESS_TOKEN');
-			const url = `${API_BASE_URL}/receivers/${receiverData.receiverId}/export-pdf`;
+			const url = `${API_BASE_URL}/receivers/export-pdf`;
 			const response = await fetch(url, {
-				method: 'GET',
+				method: 'POST',
 				headers: {
 					'Accept': 'application/pdf',
+					'Content-Type': 'application/json',
 					...(token ? { 'Authorization': `Bearer ${token}` } : {}),
 				},
+				body: JSON.stringify(receiverData),
 			});
 			if (!response.ok) throw new Error('Failed to export PDF');
 			const blob = await response.blob();
