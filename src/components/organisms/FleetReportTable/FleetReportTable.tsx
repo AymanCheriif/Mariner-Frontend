@@ -42,6 +42,7 @@ const mapShipDtoToFleetReport = (dto: ShipDTO): FleetReport => {
 		.join(', ');
 
 	return {
+		id: dto.id,
 		name: dto.name,
 		imo: dto.imo,
 		dwt: dto.dwt,
@@ -69,7 +70,7 @@ const renderActions = (data: CustomCellRendererProps<FleetReport>) => {
 	const [openInfoModal, setOpenInfoModal] = useState(false);
 
 	// We need to get the original Ship DTO data to find the id
-	const shipData = data.context.shipDtoMap.get(data.data?.imo);
+	const shipData = data.context.shipDtoMap.get(data.data?.id);
 
 	if (!shipData) {
 		return null;
@@ -833,7 +834,7 @@ const renderActions = (data: CustomCellRendererProps<FleetReport>) => {
 
 const renderConvertButton = (data: CustomCellRendererProps<FleetReport>) => {
 	// Get the original Ship DTO data
-	const shipData = data.context.shipDtoMap.get(data.data?.imo);
+	const shipData = data.context.shipDtoMap.get(data.data?.id);
 
 	if (!shipData) {
 		return null;
@@ -898,7 +899,7 @@ const FleetReportTable: FC = () => {
 	// Create a Map to store the original ShipDTO by IMO for use in the actions renderer
 	const shipDtoMap = useMemo(() => {
 		const map = new Map<string, ShipDTO>();
-		data?.forEach((ship) => map.set(ship.imo, ship));
+		data?.forEach((ship) => { if (ship.id) map.set(ship.id, ship); });
 		return map;
 	}, [data]);
 

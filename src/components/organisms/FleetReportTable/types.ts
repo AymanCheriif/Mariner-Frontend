@@ -1,4 +1,5 @@
 export interface FleetReport {
+	id?: string;
 	name: string;
 	imo: string;
 	dwt: string;
