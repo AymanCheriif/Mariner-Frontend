@@ -6,6 +6,7 @@ import { AgGridReact, CustomCellRendererProps } from 'ag-grid-react';
 import { FC, useMemo, useRef, useState } from 'react';
 import { AppButton } from '~components/atoms';
 import { classes } from '~helpers';
+import { useGetAllFournisseurs } from '~hooks/fournisseurs';
 import { useTranslation } from '~i18n';
 import { API_BASE_URL } from '~services/urls';
 import { FournisseurSummaryDTO } from '~services/fournisseur/types';
@@ -245,6 +246,7 @@ export const FournisseursTable: FC<FournisseursTableProps> = ({
 }) => {
 	const t = useTranslation();
 	const gridRef = useRef<AgGridReact>(null);
+	const { data: allFournisseursData } = useGetAllFournisseurs();
 
 	const fournisseurMap = useMemo(() => {
 		const map = new Map<string, FournisseurSummaryDTO>();
@@ -253,16 +255,16 @@ export const FournisseursTable: FC<FournisseursTableProps> = ({
 	}, [data]);
 
 	const availableFournisseurs = useMemo(() => {
-		return data?.map((f) => f.fournisseurName).sort() || [];
-	}, [data]);
+		return allFournisseursData?.map((f) => f.fournisseurName).sort() || [];
+	}, [allFournisseursData]);
 
 	const availableSubCategories = useMemo(() => {
 		const subCategories = new Set<string>();
-		data?.forEach((fournisseur) => {
+		allFournisseursData?.forEach((fournisseur) => {
 			fournisseur.subCategories.forEach((sub) => subCategories.add(sub));
 		});
 		return Array.from(subCategories).sort();
-	}, [data]);
+	}, [allFournisseursData]);
 
 	const rowData: FournisseurRow[] = useMemo(() => {
 		return data?.map(mapFournisseurToRow) ?? [];
@@ -276,14 +278,32 @@ export const FournisseursTable: FC<FournisseursTableProps> = ({
 		setSelectedSubCategory(newValue || '');
 	};
 
+	const getVisibleFournisseurIds = () => {
+		const visibleFournisseurIds: string[] = [];
+		gridRef.current?.api.forEachNodeAfterFilterAndSort((node) => {
+			const fournisseurId = node.data?.fournisseurId;
+			if (fournisseurId) {
+				visibleFournisseurIds.push(fournisseurId);
+			}
+		});
+		return visibleFournisseurIds;
+	};
+
 	const handleExportFilteredPdf = async () => {
 		try {
+			const visibleFournisseurIds = getVisibleFournisseurIds();
+			if (visibleFournisseurIds.length === 0) {
+				showToast('No fournisseurs match the current filters.', 'error');
+				return;
+			}
+
 			const token = localStorage.getItem('ACCESS_TOKEN');
 			let url = `${API_BASE_URL}/fournisseurs/export-all-pdf`;
 			const params = new URLSearchParams();
 
 			if (selectedFournisseur) params.append('fournisseurName', selectedFournisseur);
 			if (selectedSubCategory) params.append('subCategory', selectedSubCategory);
+			visibleFournisseurIds.forEach((fournisseurId) => params.append('fournisseurIds', fournisseurId));
 			if (params.toString()) url += '?' + params.toString();
 
 			const response = await fetch(url, {
@@ -315,12 +335,19 @@ export const FournisseursTable: FC<FournisseursTableProps> = ({
 
 	const handlePrintFilteredFournisseurs = async () => {
 		try {
+			const visibleFournisseurIds = getVisibleFournisseurIds();
+			if (visibleFournisseurIds.length === 0) {
+				showToast('No fournisseurs match the current filters.', 'error');
+				return;
+			}
+
 			const token = localStorage.getItem('ACCESS_TOKEN');
 			let url = `${API_BASE_URL}/fournisseurs/export-all-pdf`;
 			const params = new URLSearchParams();
 
 			if (selectedFournisseur) params.append('fournisseurName', selectedFournisseur);
 			if (selectedSubCategory) params.append('subCategory', selectedSubCategory);
+			visibleFournisseurIds.forEach((fournisseurId) => params.append('fournisseurIds', fournisseurId));
 			if (params.toString()) url += '?' + params.toString();
 
 			const response = await fetch(url, {

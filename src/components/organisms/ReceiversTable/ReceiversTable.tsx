@@ -509,14 +509,32 @@ export const ReceiversTable: FC<ReceiversTableProps> = ({
 		setSelectedSubCategory(newValue || '');
 	};
 
+	const getVisibleReceiverIds = () => {
+		const visibleReceiverIds: string[] = [];
+		gridRef.current?.api.forEachNodeAfterFilterAndSort((node) => {
+			const receiverId = node.data?.receiverId;
+			if (receiverId) {
+				visibleReceiverIds.push(receiverId);
+			}
+		});
+		return visibleReceiverIds;
+	};
+
 	const handleExportFilteredPdf = async () => {
 		try {
+			const visibleReceiverIds = getVisibleReceiverIds();
+			if (visibleReceiverIds.length === 0) {
+				showToast('No receivers match the current filters.', 'error');
+				return;
+			}
+
 			const token = localStorage.getItem('ACCESS_TOKEN');
 			let url = `${API_BASE_URL}/receivers/export-all-pdf`;
 			const params = new URLSearchParams();
 
 			if (selectedReceiver) params.append('receiverName', selectedReceiver);
 			if (selectedSubCategory) params.append('subCategory', selectedSubCategory);
+			visibleReceiverIds.forEach((receiverId) => params.append('receiverIds', receiverId));
 			if (params.toString()) url += '?' + params.toString();
 
 			const response = await fetch(url, {
@@ -548,12 +566,19 @@ export const ReceiversTable: FC<ReceiversTableProps> = ({
 
 	const handlePrintFilteredReceivers = async () => {
 		try {
+			const visibleReceiverIds = getVisibleReceiverIds();
+			if (visibleReceiverIds.length === 0) {
+				showToast('No receivers match the current filters.', 'error');
+				return;
+			}
+
 			const token = localStorage.getItem('ACCESS_TOKEN');
 			let url = `${API_BASE_URL}/receivers/export-all-pdf`;
 			const params = new URLSearchParams();
 
 			if (selectedReceiver) params.append('receiverName', selectedReceiver);
 			if (selectedSubCategory) params.append('subCategory', selectedSubCategory);
+			visibleReceiverIds.forEach((receiverId) => params.append('receiverIds', receiverId));
 			if (params.toString()) url += '?' + params.toString();
 
 			const response = await fetch(url, {

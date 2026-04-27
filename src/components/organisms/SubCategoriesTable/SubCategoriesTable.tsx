@@ -207,6 +207,59 @@ export const SubCategoriesTable: FC<SubCategoriesTableProps> = ({
 		return data?.map(mapSubCategoryToRow) ?? [];
 	}, [data]);
 
+	const getVisibleSubCategories = () => {
+		const visibleSubCategories: string[] = [];
+		gridRef.current?.api.forEachNodeAfterFilterAndSort((node) => {
+			const subCategory = node.data?.subCategory;
+			if (subCategory) {
+				visibleSubCategories.push(subCategory);
+			}
+		});
+		return visibleSubCategories;
+	};
+
+	const handleExportFilteredPdf = async () => {
+		try {
+			const visibleSubCategories = getVisibleSubCategories();
+
+			if (visibleSubCategories.length === 0) {
+				showToast('No sub-categories match the current filters.', 'error');
+				return;
+			}
+
+			const token = localStorage.getItem('ACCESS_TOKEN');
+			let url = `${API_BASE_URL}/subcategories/export-all-pdf`;
+			const params = new URLSearchParams();
+			visibleSubCategories.forEach((subCategory) => params.append('subCategories', subCategory));
+			if (params.toString()) url += `?${params.toString()}`;
+
+			const response = await fetch(url, {
+				method: 'GET',
+				headers: {
+					'Accept': 'application/pdf',
+					...(token ? { 'Authorization': `Bearer ${token}` } : {}),
+				},
+			});
+
+			if (!response.ok) throw new Error('Failed to export PDF');
+
+			const blob = await response.blob();
+			const urlBlob = window.URL.createObjectURL(blob);
+			const link = document.createElement('a');
+			link.href = urlBlob;
+			link.download = `subcategories_filtered_${new Date().toISOString().split('T')[0]}.pdf`;
+			document.body.appendChild(link);
+			link.click();
+			link.remove();
+			window.URL.revokeObjectURL(urlBlob);
+
+			showToast('PDF exported successfully', 'success');
+		} catch (err) {
+			console.error('Failed to export PDF:', err);
+			showToast('Failed to export PDF', 'error');
+		}
+	};
+
 	const colDefs: ColDef<SubCategoryRow>[] = useMemo(
 		() => [
 			{
@@ -251,6 +304,15 @@ export const SubCategoriesTable: FC<SubCategoriesTableProps> = ({
 					<Box className="loading-spinner" />
 				</Box>
 			)}
+
+			<Box sx={{ display: 'flex', justifyContent: 'flex-end', mb: 2 }}>
+				<AppButton
+					onClick={handleExportFilteredPdf}
+					value="Export PDF"
+					variant="contained"
+					sx={{ minWidth: '120px', fontWeight: 600, borderRadius: '8px', textTransform: 'none' }}
+				/>
+			</Box>
 
 			<AgGridReact
 				ref={gridRef}

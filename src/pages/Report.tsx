@@ -10,11 +10,13 @@ export const ReportPage: FC = () => {
 	
 	// Filter states
 	const [selectedPort, setSelectedPort] = useState('');
-	const [selectedReceiver, setSelectedReceiver] = useState('');
-	const [selectedSubCategory, setSelectedSubCategory] = useState('');
+	const [selectedShipReceiver, setSelectedShipReceiver] = useState('');
+	const [selectedShipSubCategory, setSelectedShipSubCategory] = useState('');
 	const [selectedCategory, setSelectedCategory] = useState('');
 	const [dwtFrom, setDwtFrom] = useState('');
 	const [dwtTo, setDwtTo] = useState('');
+	const [selectedReceiver, setSelectedReceiver] = useState('');
+	const [selectedReceiverSubCategory, setSelectedReceiverSubCategory] = useState('');
 	const [dateFrom, setDateFrom] = useState<Dayjs | null>(null);
 	const [dateTo, setDateTo] = useState<Dayjs | null>(null);
 
@@ -25,8 +27,8 @@ export const ReportPage: FC = () => {
 	// Fetch ships with server-side filtering
 	const { data, isError, isLoading } = useGetAllShips({
 		boardingPort: selectedPort || undefined,
-		receiverName: selectedReceiver || undefined,
-		subCategory: selectedSubCategory || undefined,
+		receiverName: selectedShipReceiver || undefined,
+		subCategory: selectedShipSubCategory || undefined,
 		category: selectedCategory || undefined,
 		dateFrom: dateFrom?.format('YYYY-MM-DD'),
 		dateTo: dateTo?.format('YYYY-MM-DD'),
@@ -113,10 +115,10 @@ export const ReportPage: FC = () => {
 					isLoading={isLoading}
 					selectedPort={selectedPort}
 					setSelectedPort={setSelectedPort}
-					selectedReceiver={selectedReceiver}
-					setSelectedReceiver={setSelectedReceiver}
-					selectedSubCategory={selectedSubCategory}
-					setSelectedSubCategory={setSelectedSubCategory}
+					selectedReceiver={selectedShipReceiver}
+					setSelectedReceiver={setSelectedShipReceiver}
+					selectedSubCategory={selectedShipSubCategory}
+					setSelectedSubCategory={setSelectedShipSubCategory}
 					selectedCategory={selectedCategory}
 					setSelectedCategory={setSelectedCategory}
 					dateFrom={dateFrom}
@@ -138,8 +140,8 @@ export const ReportPage: FC = () => {
 				<ReceiversTable
 					selectedReceiver={selectedReceiver}
 					setSelectedReceiver={setSelectedReceiver}
-					selectedSubCategory={selectedSubCategory}
-					setSelectedSubCategory={setSelectedSubCategory}
+					selectedSubCategory={selectedReceiverSubCategory}
+					setSelectedSubCategory={setSelectedReceiverSubCategory}
 					showToast={showToast}
 				/>
 			)}

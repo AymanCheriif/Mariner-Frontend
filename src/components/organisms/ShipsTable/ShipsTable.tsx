@@ -1462,15 +1462,35 @@ export const ShipsTable: FC<ShipsTableProps> = ({
 		setDwtTo(event.target.value);
 	};
 
+	const getVisibleShipIds = () => {
+		const visibleShipIds: string[] = [];
+		gridRef.current?.api.forEachNodeAfterFilterAndSort((node) => {
+			const shipId = node.data?.id;
+			if (shipId) {
+				visibleShipIds.push(shipId);
+			}
+		});
+		return visibleShipIds;
+	};
+
 	const exportPdfData = async () => {
 		try {
+			const visibleShipIds = getVisibleShipIds();
+
+			if (visibleShipIds.length === 0) {
+				showToast('No ships match the current filters.', 'error');
+				return;
+			}
+
 			await addShipService.exportShipsPDF(
 				selectedPort || undefined,
 				selectedReceiver || undefined,
 				selectedSubCategory || undefined,
 				false,
 				dateFrom ? dateFrom.format('YYYY-MM-DD') : undefined,
-				dateTo ? dateTo.format('YYYY-MM-DD') : undefined
+				dateTo ? dateTo.format('YYYY-MM-DD') : undefined,
+				selectedCategory || undefined,
+				visibleShipIds
 			);
 		} catch (error) {
 			console.error('Error exporting PDF:', error);
