@@ -17,6 +17,7 @@ import { isUserAdmin } from '~components/organisms/Layouts/AuthenticatedLayout/A
 import { API_BASE_URL } from '~services/urls';
 
 interface ReceiverRow {
+	receiverLookupKey: string;
 	receiverId: string;
 	receiverName: string;
 	receiverEmail: string;
@@ -28,8 +29,11 @@ interface ReceiverRow {
 	subCategories: string;
 }
 
+const getReceiverLookupKey = (receiverId?: string, receiverName?: string) => `${receiverId || ''}::${receiverName || ''}`;
+
 const mapReceiverSummaryToRow = (dto: ReceiverSummaryDTO): ReceiverRow => {
 	return {
+		receiverLookupKey: getReceiverLookupKey(dto.receiverId, dto.receiverName),
 		receiverId: dto.receiverId,
 		receiverName: dto.receiverName,
 		receiverEmail: dto.receiverEmail || '',
@@ -46,7 +50,7 @@ const renderActions = (data: CustomCellRendererProps<ReceiverRow>) => {
 	const [openDetailsModal, setOpenDetailsModal] = useState(false);
 	const [isExportingPdf, setIsExportingPdf] = useState(false);
 
-	const receiverData = data.context.receiverDtoMap.get(data.data?.receiverId);
+	const receiverData = data.context.receiverDtoMap.get(data.data?.receiverLookupKey);
 
 	if (!receiverData) {
 		return null;
@@ -479,7 +483,7 @@ export const ReceiversTable: FC<ReceiversTableProps> = ({
 
 	const receiverDtoMap = useMemo(() => {
 		const map = new Map<string, ReceiverSummaryDTO>();
-		data?.forEach((receiver) => map.set(receiver.receiverId, receiver));
+		data?.forEach((receiver) => map.set(getReceiverLookupKey(receiver.receiverId, receiver.receiverName), receiver));
 		return map;
 	}, [data]);
 
