@@ -169,11 +169,29 @@ const getShipsByAgent = async (agentName: string): Promise<ShipDTO[]> => {
 	return data;
 };
 
+const exportShipsByAgentPDF = async (agentName: string): Promise<void> => {
+	const endpoint = `${API_ENDPOINTS.CreateShip}/by-agent/${encodeURIComponent(agentName)}/export-pdf`;
+	const blobData = await apiClient.get<Blob>(endpoint, {
+		responseType: 'blob',
+	});
+
+	const blob = new Blob([blobData], { type: 'application/pdf' });
+	const url = window.URL.createObjectURL(blob);
+	const link = document.createElement('a');
+	link.href = url;
+	link.download = `agent_${agentName}_ships.pdf`;
+	document.body.appendChild(link);
+	link.click();
+	link.remove();
+	window.URL.revokeObjectURL(url);
+};
+
 export const addShipService = {
 	createShip,
 	getShips,
 	getFleets,
 	getShipsByAgent,
+	exportShipsByAgentPDF,
 	updateShip,
 	deleteShip,
 	getShipById,

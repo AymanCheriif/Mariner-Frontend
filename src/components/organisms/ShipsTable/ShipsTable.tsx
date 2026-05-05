@@ -352,6 +352,7 @@ const renderAgent = (data: CustomCellRendererProps<ShipRow>) => {
 	const [openAgentModal, setOpenAgentModal] = useState(false);
 	const [agentShips, setAgentShips] = useState<ShipDTO[]>([]);
 	const [isLoading, setIsLoading] = useState(false);
+	const [isExportingPdf, setIsExportingPdf] = useState(false);
 	const agentName = data.value || 'NAVLION';
 
 	const handleAgentClick = async () => {
@@ -377,6 +378,19 @@ const renderAgent = (data: CustomCellRendererProps<ShipRow>) => {
 
 	const calculateTotalCargoes = () => {
 		return agentShips.reduce((sum, ship) => sum + (ship.cargoes?.length || 0), 0);
+	};
+
+	const handleExportPdf = async () => {
+		try {
+			setIsExportingPdf(true);
+			await addShipService.exportShipsByAgentPDF(agentName);
+			data.context.showToast?.('PDF exported successfully', 'success');
+		} catch (error) {
+			console.error('Failed to export agent ships PDF:', error);
+			data.context.showToast?.('Failed to export PDF', 'error');
+		} finally {
+			setIsExportingPdf(false);
+		}
 	};
 
 	return (
@@ -508,7 +522,19 @@ const renderAgent = (data: CustomCellRendererProps<ShipRow>) => {
 								)}
 							</Box>
 
-							<Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 3 }}>
+							<Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 3, gap: 2 }}>
+								<AppButton
+									onClick={handleExportPdf}
+									value="Export PDF"
+									loading={isExportingPdf}
+									variant="contained"
+									sx={{
+										minWidth: '120px',
+										fontWeight: 600,
+										borderRadius: '8px',
+										textTransform: 'none',
+									}}
+								/>
 								<AppButton
 									onClick={() => setOpenAgentModal(false)}
 									value="Close"
