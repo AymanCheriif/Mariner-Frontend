@@ -14,6 +14,7 @@ import styles from './FournisseursTable.module.css';
 import CloseIcon from '@mui/icons-material/Close';
 
 interface FournisseurRow {
+	fournisseurLookupKey: string;
 	fournisseurId: string;
 	fournisseurName: string;
 	fournisseurEmail: string;
@@ -24,8 +25,11 @@ interface FournisseurRow {
 	subCategories: string;
 }
 
+const getFournisseurLookupKey = (fournisseurId?: string, fournisseurName?: string) => `${fournisseurId || ''}::${fournisseurName || ''}`;
+
 const mapFournisseurToRow = (dto: FournisseurSummaryDTO): FournisseurRow => {
 	return {
+		fournisseurLookupKey: getFournisseurLookupKey(dto.fournisseurId, dto.fournisseurName),
 		fournisseurId: dto.fournisseurId,
 		fournisseurName: dto.fournisseurName,
 		fournisseurEmail: dto.fournisseurEmail || '',
@@ -40,7 +44,7 @@ const mapFournisseurToRow = (dto: FournisseurSummaryDTO): FournisseurRow => {
 const renderFournisseurName = (data: CustomCellRendererProps<FournisseurRow>) => {
 	const [openModal, setOpenModal] = useState(false);
 	const [isExportingPdf, setIsExportingPdf] = useState(false);
-	const fournisseurData = data.context.fournisseurMap.get(data.data?.fournisseurId);
+	const fournisseurData = data.context.fournisseurMap.get(data.data?.fournisseurLookupKey);
 
 	const handleDoubleClick = () => {
 		setOpenModal(true);
@@ -54,14 +58,16 @@ const renderFournisseurName = (data: CustomCellRendererProps<FournisseurRow>) =>
 		try {
 			setIsExportingPdf(true);
 			const token = localStorage.getItem('ACCESS_TOKEN');
-			const url = `${API_BASE_URL}/fournisseurs/${data.data?.fournisseurId}/export-pdf`;
+			const url = `${API_BASE_URL}/fournisseurs/export-pdf`;
 
 			const response = await fetch(url, {
-				method: 'GET',
+				method: 'POST',
 				headers: {
 					'Accept': 'application/pdf',
+					'Content-Type': 'application/json',
 					...(token ? { 'Authorization': `Bearer ${token}` } : {}),
 				},
+				body: JSON.stringify(fournisseurData),
 			});
 
 			if (!response.ok) throw new Error('Failed to export PDF');
@@ -258,7 +264,7 @@ export const FournisseursTable: FC<FournisseursTableProps> = ({
 
 	const fournisseurMap = useMemo(() => {
 		const map = new Map<string, FournisseurSummaryDTO>();
-		data?.forEach((fournisseur) => map.set(fournisseur.fournisseurId, fournisseur));
+		data?.forEach((fournisseur) => map.set(getFournisseurLookupKey(fournisseur.fournisseurId, fournisseur.fournisseurName), fournisseur));
 		return map;
 	}, [data]);
 
