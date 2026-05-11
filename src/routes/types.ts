@@ -10,6 +10,7 @@ export enum EPaths {
 	ADD_FLEET = '/add-fleet',
 	REPORT = '/report',
 	USERS = '/users',
+	CARGO_TAXONOMY = '/cargo-taxonomy',
 	FLEETS_REPORT = '/fleets-report',
 }
 

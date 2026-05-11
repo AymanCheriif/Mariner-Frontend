@@ -1,0 +1,95 @@
+.wrapper {
+	display: grid;
+	grid-template-columns: repeat(2, minmax(0, 1fr));
+	gap: 24px;
+	align-items: start;
+}
+
+.card {
+	min-height: 520px;
+}
+
+.formRow {
+	display: flex;
+	flex-direction: column;
+	gap: 16px;
+	margin-bottom: 16px;
+}
+
+.actions {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 12px;
+}
+
+.list {
+	display: flex;
+	flex-direction: column;
+	gap: 10px;
+	max-height: 420px;
+	overflow: auto;
+}
+
+.listItem {
+	width: 100%;
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 12px;
+	padding: 14px 16px;
+	border: 1px solid #d9e2ec;
+	border-radius: 12px;
+	background: #fff;
+	cursor: pointer;
+	text-align: left;
+	transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
+}
+
+.listItem:hover {
+	border-color: #1976d2;
+	box-shadow: 0 6px 18px rgba(25, 118, 210, 0.08);
+	transform: translateY(-1px);
+}
+
+.selected {
+	border-color: #1976d2;
+	background: #f3f8ff;
+}
+
+.itemTitle {
+	font-size: 16px;
+	font-weight: 600;
+	color: #1f2937;
+}
+
+.itemMeta {
+	margin-top: 4px;
+	font-size: 13px;
+	color: #64748b;
+}
+
+.itemHint {
+	font-size: 13px;
+	font-weight: 600;
+	color: #1976d2;
+}
+
+.emptyState,
+.centeredState {
+	min-height: 180px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	border: 1px dashed #cbd5e1;
+	border-radius: 12px;
+	color: #64748b;
+	background: #f8fafc;
+	padding: 16px;
+	text-align: center;
+}
+
+@media (max-width: 1100px) {
+	.wrapper {
+		grid-template-columns: 1fr;
+	}
+}

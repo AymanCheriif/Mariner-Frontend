@@ -1,6 +1,6 @@
 import { RouteObject, RouterProvider, createHashRouter } from 'react-router-dom';
 import { AuthenticatedLayout, DevLayout, FleetReportTable, MainFormLayout } from '~components/organisms';
-import { AddAgentShipPage, AddFleetPage, AddOurShipPage, ErrorPage, LoginPage, ReportPage, UsersPage } from '~pages';
+import { AddAgentShipPage, AddFleetPage, AddOurShipPage, CargoTaxonomyPage, ErrorPage, LoginPage, ReportPage, UsersPage } from '~pages';
 import { EPaths } from './types';
 
 const LOGIN_ROUTE: RouteObject = {
@@ -17,6 +17,11 @@ const REPORT_ROUTS: RouteObject = {
 const REPORT_UPDATE_ROUTE: RouteObject = {
 	path: '/report/update/:id',
 	element: <AddOurShipPage />,
+};
+
+const CARGO_TAXONOMY_ROUTE: RouteObject = {
+	path: EPaths.CARGO_TAXONOMY,
+	element: <CargoTaxonomyPage />,
 };
 
 const MAIN_FORMS_ROUTES: RouteObject[] = [
@@ -60,7 +65,7 @@ const router = createHashRouter([
 			LOGIN_ROUTE,
 			{
 				element: <MainFormLayout />,
-				children: [...MAIN_FORMS_ROUTES, REPORT_ROUTS, REPORT_UPDATE_ROUTE, ...ADMIN_ROUTES],
+				children: [...MAIN_FORMS_ROUTES, REPORT_ROUTS, REPORT_UPDATE_ROUTE, CARGO_TAXONOMY_ROUTE, ...ADMIN_ROUTES],
 			},
 		],
 	},

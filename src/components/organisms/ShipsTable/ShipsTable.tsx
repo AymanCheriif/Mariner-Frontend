@@ -7,7 +7,7 @@ import dayjs, { Dayjs } from 'dayjs';
 import { FC, useEffect, useMemo, useRef, useState } from 'react';
 import { AppButton, DocumentViewer, TableStateOverlay } from '~components/atoms';
 import { classes } from '~helpers';
-import { CONSTANTS } from '~helpers/constants';
+import { useGetCargoCategories } from '~hooks/cargoTaxonomy';
 import { useTranslation } from '~i18n';
 import { API_BASE_URL } from '~services/urls';
 import { addShipService } from '~services/addShip';
@@ -1440,6 +1440,7 @@ export const ShipsTable: FC<ShipsTableProps> = ({
 	const gridRef = useRef<AgGridReact>(null);
 	const [isExportingPdf, setIsExportingPdf] = useState(false);
 	const [displayedRowCount, setDisplayedRowCount] = useState(0);
+	const { data: cargoCategories = [] } = useGetCargoCategories();
 
 
 	const shipDtoMap = useMemo(() => {
@@ -1465,12 +1466,12 @@ export const ShipsTable: FC<ShipsTableProps> = ({
 				if (c?.category) cats.add(c.category);
 			});
 		});
-		// fallback to constants keys if none found
+		// fallback to taxonomy values if no ship data is currently loaded
 		if (cats.size === 0) {
-			Object.keys(CONSTANTS.CARGAISON_CATEGORIES_AND_SUB_CATEGORIES).forEach((k) => cats.add(k));
+			cargoCategories.forEach((category) => cats.add(category.name));
 		}
 		return Array.from(cats).sort();
-	}, [data]);
+	}, [cargoCategories, data]);
 
 	const availableReceivers = useMemo(() => {
 		const receivers = new Set<string>();

@@ -47,6 +47,13 @@ export const MainSidebar = () => {
 			</div>
 
 			<div className={classes(styles.content, styles.center)}>
+				<AppButton
+					className={styles.accountButton}
+					variant="text"
+					value={t('common.manageCargoTaxonomy')}
+					onClick={() => navigate(EPaths.CARGO_TAXONOMY)}
+				/>
+				<Divider className={styles.divider} />
 				{isAdmin && (
 					<>
 						<AppButton

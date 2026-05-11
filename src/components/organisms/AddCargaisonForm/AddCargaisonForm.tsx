@@ -5,7 +5,7 @@ import { Controller, useFieldArray, useFormContext } from 'react-hook-form';
 import { Autocomplete, TextField } from '@mui/material';
 import { AppCard, AppRadio, AppSelect, Input } from '~components/atoms';
 import { classes } from '~helpers';
-import { CONSTANTS } from '~helpers/constants';
+import { useGetCargoCategories } from '~hooks/cargoTaxonomy';
 import { useTranslation } from '~i18n';
 import { useGetAllFournisseurs } from '~hooks/fournisseurs';
 import { useGetAllReceivers } from '~hooks/receivers';
@@ -29,9 +29,6 @@ const AVAILABLE_CARGOES_TYPES: { label: string; type: AddOurShipRequest['cargoes
 	{ label: 'Cargaison', type: 'cargaison' },
 ];
 
-type AllowedCategory = keyof typeof CONSTANTS.CARGAISON_CATEGORIES_AND_SUB_CATEGORIES;
-const CATEGORIES = Object.keys(CONSTANTS.CARGAISON_CATEGORIES_AND_SUB_CATEGORIES) as AllowedCategory[];
-
 export const AddCargaisonForm: FC<Props> = ({ isUpdate }) => {
 	const t = useTranslation();
 
@@ -43,6 +40,7 @@ export const AddCargaisonForm: FC<Props> = ({ isUpdate }) => {
 
 	// Get all fournisseurs for selection
 	const { data: fournisseurs = [] } = useGetAllFournisseurs();
+	const { data: cargoCategories = [] } = useGetCargoCategories();
 
 	// IMPORTANT: use a custom keyName so our 'id' field from backend is preserved
 	const { fields, prepend, remove, replace } = useFieldArray({
@@ -81,12 +79,28 @@ export const AddCargaisonForm: FC<Props> = ({ isUpdate }) => {
 	});
 
 	const getSubCategories = (cargoIndex: number) => {
-		const category = cargoes[cargoIndex]?.category as AllowedCategory;
+		const category = cargoes[cargoIndex]?.category;
+		const matchedCategory = cargoCategories.find((item) => item.name === category);
+		const options = new Set(matchedCategory?.subCategories.map((item) => item.name) ?? []);
+		const currentSubCategory = cargoes[cargoIndex]?.subCategory?.trim();
 
-		const subCategories = CONSTANTS.CARGAISON_CATEGORIES_AND_SUB_CATEGORIES[category] ?? [];
+		if (currentSubCategory) {
+			options.add(currentSubCategory);
+		}
 
-		return subCategories.length > 0 ? subCategories : [category];
+		if (options.size === 0 && category) {
+			options.add(category);
+		}
+
+		return Array.from(options);
 	};
+
+	const availableCategories = Array.from(
+		new Set([
+			...cargoCategories.map((category) => category.name),
+			...cargoes.map((cargo) => cargo?.category).filter((category): category is string => Boolean(category)),
+		])
+	).sort();
 
 	const handleAddCargo = () => {
 		if (formState.errors.cargoes?.length !== undefined && formState.errors.cargoes.length > 0) {
@@ -175,7 +189,7 @@ export const AddCargaisonForm: FC<Props> = ({ isUpdate }) => {
 								render={({ field, fieldState }) => (
 									<AppSelect
 										muiLabel={t('form.category.label')}
-										options={CATEGORIES}
+										options={availableCategories}
 										error={fieldState.error}
 										{...field}
 									/>
