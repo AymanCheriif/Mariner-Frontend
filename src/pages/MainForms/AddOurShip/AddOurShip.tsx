@@ -62,6 +62,9 @@ export const AddOurShipPage: FC = () => {
 			? updateFleetFormMethods
 			: updateShipFormMethods
 		: addShipHook.formMethods;
+	const watchedCargoes = formMethods.watch('cargoes');
+	const hasCargoes = Array.isArray(watchedCargoes) && watchedCargoes.length > 0;
+	const shouldShowCargoSection = !isFleet || hasCargoes;
 	const isRequestLoading = isUpdateMode ? false : addShipHook.isRequestLoading;
 
 	// Local loading state for update flow (submitting)
@@ -86,7 +89,7 @@ export const AddOurShipPage: FC = () => {
 				const dto = await addShipService.getShipById(id!);
 				if (!cancelled) {
 					// Track if this is a fleet ship first
-					const fleetStatus = dto.isFleet ?? false;
+					const fleetStatus = dto.isFleet === true;
 					setIsFleet(fleetStatus);
 					// Reset the appropriate form
 					const targetForm = fleetStatus ? updateFleetFormMethods : updateShipFormMethods;
@@ -161,7 +164,7 @@ export const AddOurShipPage: FC = () => {
 
 				<AddShipForm isUpdate={isUpdateMode} isFleet={isFleet} />
 
-				{!isFleet ? <AddCargaisonForm isUpdate={isUpdateMode} /> : null}
+				{shouldShowCargoSection ? <AddCargaisonForm isUpdate={isUpdateMode} /> : null}
 
 				<div className={styles.row}>
 					{isUpdateMode ? (
@@ -189,7 +192,7 @@ export const AddOurShipPage: FC = () => {
 						placeholder={t('form.yourNotes.label')}
 						formName="remarksAndFacts"
 					/>
-					{!isFleet ? (
+					{shouldShowCargoSection ? (
 						<AddTextAreaForm
 							title={t('common.performanceRate')}
 							placeholder={t('form.performanceRateFunction')}
