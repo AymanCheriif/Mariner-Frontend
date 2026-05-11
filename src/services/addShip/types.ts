@@ -84,6 +84,7 @@ export type GetShipsFilter = {
 export interface CargoDetailsDTO {
 	shipName: string;
 	shipImo: string;
+	berthingDate?: string;
 	boardingPort: string;
 	category: string;
 	subCategory: string;

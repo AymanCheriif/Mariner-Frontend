@@ -3,6 +3,7 @@ import { ColDef } from 'ag-grid-community';
 import 'ag-grid-community/styles/ag-grid.css';
 import 'ag-grid-community/styles/ag-theme-quartz.css';
 import { AgGridReact, CustomCellRendererProps } from 'ag-grid-react';
+import dayjs from 'dayjs';
 import { FC, useMemo, useRef, useState, useEffect } from 'react';
 import { AppButton, TableStateOverlay } from '~components/atoms';
 import { classes } from '~helpers';
@@ -237,6 +238,16 @@ const renderActions = (data: CustomCellRendererProps<ReceiverRow>) => {
 												borderBottom: '1px solid rgba(224, 224, 224, 1)',
 											}}
 										>
+											Date
+										</th>
+										<th
+											style={{
+												padding: '8px',
+												textAlign: 'left',
+												backgroundColor: '#f5f5f5',
+												borderBottom: '1px solid rgba(224, 224, 224, 1)',
+											}}
+										>
 											Port
 										</th>
 										<th
@@ -301,6 +312,9 @@ const renderActions = (data: CustomCellRendererProps<ReceiverRow>) => {
 											</td>
 											<td style={{ padding: '8px', borderBottom: '1px solid rgba(224, 224, 224, 1)' }}>
 												{cargo.shipImo}
+											</td>
+											<td style={{ padding: '8px', borderBottom: '1px solid rgba(224, 224, 224, 1)' }}>
+												{cargo.berthingDate ? dayjs(cargo.berthingDate).format('DD/MM/YYYY') : 'N/A'}
 											</td>
 											<td style={{ padding: '8px', borderBottom: '1px solid rgba(224, 224, 224, 1)' }}>
 												{cargo.boardingPort}

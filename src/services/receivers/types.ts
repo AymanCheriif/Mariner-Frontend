@@ -1,6 +1,7 @@
 export interface CargoDetailsDTO {
 	shipName: string;
 	shipImo: string;
+	berthingDate?: string;
 	boardingPort: string;
 	completionDate: string;
 	category: string;
