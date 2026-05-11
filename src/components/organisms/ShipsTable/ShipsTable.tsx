@@ -117,6 +117,16 @@ const renderImo = (data: CustomCellRendererProps<ShipRow>) => {
 		return <span>{data.value}</span>;
 	}
 
+	const shipSummaryItems = [
+		{ label: 'IMO', value: shipData.imo },
+		{ label: 'Agent', value: shipData.agent || 'N/A' },
+		{ label: 'Port', value: shipData.boardingPort || 'N/A' },
+		{
+			label: 'Date',
+			value: shipData.berthingDate ? dayjs(shipData.berthingDate).format('DD/MM/YYYY') : 'N/A',
+		},
+	].filter((item) => Boolean(item.value));
+
 	return (
 		<>
 			<span
@@ -161,16 +171,49 @@ const renderImo = (data: CustomCellRendererProps<ShipRow>) => {
 							mb: 3,
 						}}
 					>
-						<h2
-							id="cargoes-modal-title"
-							style={{
-								margin: 0,
-								fontSize: '22px',
-								fontWeight: 600,
-							}}
-						>
-							{shipData.name} - Cargoes
-						</h2>
+						<Box sx={{ display: 'flex', flexDirection: 'column', gap: 1, minWidth: 0 }}>
+							<h2
+								id="cargoes-modal-title"
+								style={{
+									margin: 0,
+									fontSize: '22px',
+									fontWeight: 600,
+								}}
+							>
+								{shipData.name} - Cargoes
+							</h2>
+							<Box
+								sx={{
+									display: 'flex',
+									flexWrap: 'wrap',
+									gap: 1,
+								}}
+							>
+								{shipSummaryItems.map((item) => (
+									<Box
+										key={item.label}
+										sx={{
+											display: 'inline-flex',
+											alignItems: 'center',
+											gap: 0.75,
+											px: 1.25,
+											py: 0.5,
+											borderRadius: '999px',
+											backgroundColor: '#f5f7fb',
+											border: '1px solid #e2e8f0',
+											fontSize: '13px',
+										}}
+									>
+										<Box component="span" sx={{ fontWeight: 700, color: '#334155' }}>
+											{item.label}:
+										</Box>
+										<Box component="span" sx={{ color: '#475569' }}>
+											{item.value}
+										</Box>
+									</Box>
+								))}
+							</Box>
+						</Box>
 						<IconButton
 							onClick={handleCloseCargoesModal}
 							aria-label="Close"
