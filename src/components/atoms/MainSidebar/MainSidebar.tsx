@@ -40,6 +40,12 @@ export const MainSidebar = () => {
 				/>
 
 				<AppButton
+					value={t('common.manageCargoTaxonomy')}
+					onClick={() => navigate(EPaths.CARGO_TAXONOMY)}
+					variant={getVariant(EPaths.CARGO_TAXONOMY)}
+				/>
+
+				<AppButton
 					value={t('common.fleetsReport')}
 					onClick={() => navigate(EPaths.FLEETS_REPORT)}
 					variant={getVariant(EPaths.FLEETS_REPORT)}
@@ -47,13 +53,6 @@ export const MainSidebar = () => {
 			</div>
 
 			<div className={classes(styles.content, styles.center)}>
-				<AppButton
-					className={styles.accountButton}
-					variant="text"
-					value={t('common.manageCargoTaxonomy')}
-					onClick={() => navigate(EPaths.CARGO_TAXONOMY)}
-				/>
-				<Divider className={styles.divider} />
 				{isAdmin && (
 					<>
 						<AppButton
