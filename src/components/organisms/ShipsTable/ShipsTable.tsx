@@ -43,6 +43,15 @@ interface ShipRow {
 	cargoCategory?: string;
 }
 
+const formatBerthingDate = (value?: string) => {
+	if (!value) {
+		return '—';
+	}
+
+	const parsed = dayjs(value);
+	return parsed.isValid() ? parsed.format('DD-MM-YYYY') : '—';
+};
+
 const mapShipDtoToShipRow = (dto: ShipDTO): ShipRow => {
 	return {
 		id: dto.id,
@@ -520,6 +529,9 @@ const renderAgent = (data: CustomCellRendererProps<ShipRow>) => {
 													Port
 												</th>
 												<th style={{ padding: '8px', textAlign: 'left', backgroundColor: '#f5f5f5', borderBottom: '1px solid rgba(224, 224, 224, 1)' }}>
+													Date
+												</th>
+												<th style={{ padding: '8px', textAlign: 'left', backgroundColor: '#f5f5f5', borderBottom: '1px solid rgba(224, 224, 224, 1)' }}>
 													Cargoes
 												</th>
 											</tr>
@@ -538,6 +550,9 @@ const renderAgent = (data: CustomCellRendererProps<ShipRow>) => {
 													</td>
 													<td style={{ padding: '8px', borderBottom: '1px solid rgba(224, 224, 224, 1)' }}>
 														{ship.boardingPort}
+													</td>
+													<td style={{ padding: '8px', borderBottom: '1px solid rgba(224, 224, 224, 1)' }}>
+														{formatBerthingDate(ship.berthingDate)}
 													</td>
 													<td style={{ padding: '8px', borderBottom: '1px solid rgba(224, 224, 224, 1)' }}>
 														{ship.cargoes?.length || 0}
