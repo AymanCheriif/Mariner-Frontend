@@ -57,10 +57,10 @@ export const DocumentationFormItem: FC<Props> = ({ titleKey: title, formName, pr
 	};
 
 	return (
-		<div className={styles.row}>
+		<div className={styles.container}>
 			<h6 className={styles.documentationTitle}>{t(title)}</h6>
 
-			<div className={classes(styles.row, styles.wrap)}>
+			<div className={classes(styles.content, styles.wrap)}>
 				{/* Existing documents preview (update mode) */}
 				{Array.isArray(previewIds) && previewIds.length > 0 && (
 					<div className={styles.previewContainer}>

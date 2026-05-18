@@ -1,5 +1,6 @@
 import CloseOutlinedIcon from '@mui/icons-material/CloseOutlined';
 import CloudUploadIcon from '@mui/icons-material/CloudUpload';
+import DescriptionOutlinedIcon from '@mui/icons-material/DescriptionOutlined';
 import { IconButton, Stack, styled } from '@mui/material';
 import { ChangeEventHandler, FC, useRef } from 'react';
 import { classes, toArray } from '~helpers';
@@ -30,6 +31,18 @@ const VisuallyHiddenInput = styled('input')({
 export const FileInput: FC<Props> = ({ title, documents, setDocuments, error }) => {
 	const t = useTranslation();
 	const inputRef = useRef<HTMLInputElement | null>(null);
+
+	const formatFileSize = (size: number) => {
+		if (size < 1024) {
+			return `${size} B`;
+		}
+
+		if (size < 1024 * 1024) {
+			return `${(size / 1024).toFixed(1)} KB`;
+		}
+
+		return `${(size / (1024 * 1024)).toFixed(1)} MB`;
+	};
 
 	const handleChange: ChangeEventHandler<HTMLInputElement> = (e) => {
 		const files = e.target.files;
@@ -76,56 +89,82 @@ export const FileInput: FC<Props> = ({ title, documents, setDocuments, error }) 
 	};
 
 	return (
-		<Stack spacing={1}>
-			<AppButton
-				value={
-					<>
-						<VisuallyHiddenInput
-							ref={inputRef}
-							type="file"
-							onChange={handleChange}
-							accept="image/png, image/jpeg, image/jpg, image/svg+xml, application/pdf"
-							multiple
-						/>
-						{title ?? t('common.upload')}
-					</>
-				}
-				component="label"
-				variant="outlined"
-				role={undefined}
-				startIcon={<CloudUploadIcon />}
-				color={error !== undefined ? 'error' : 'info'}
-			/>
+		<Stack spacing={1.25} className={classes(styles.root, error !== undefined && styles.errorState)}>
+			<div className={styles.header}>
+				<AppButton
+					value={
+						<>
+							<VisuallyHiddenInput
+								ref={inputRef}
+								type="file"
+								onChange={handleChange}
+								accept="image/png, image/jpeg, image/jpg, image/svg+xml, application/pdf"
+								multiple
+							/>
+							{title ?? t('common.upload')}
+						</>
+					}
+					component="label"
+					variant="outlined"
+					role={undefined}
+					startIcon={<CloudUploadIcon />}
+					color={error !== undefined ? 'error' : 'info'}
+					className={styles.uploadButton}
+					sx={{
+						justifyContent: 'flex-start',
+						textTransform: 'none',
+						borderStyle: 'dashed',
+						borderWidth: '1.5px',
+						paddingInline: '1rem',
+						paddingBlock: '0.7rem',
+						fontWeight: 600,
+						minWidth: { xs: '100%', sm: '11rem' },
+					}}
+				/>
 
-			{documents && documents.length > 0 ? (
-				<>
+				{documents && documents.length > 0 ? (
 					<div className={classes(styles.selectedFilesSummary, error !== undefined && styles.error)}>
-						<div className={styles.selectedFilesLabel}>
-							{documents.length} {t('form.files.label')}
+						<div>
+							<div className={styles.selectedFilesLabel}>
+								{documents.length} {t('form.files.label')}
+							</div>
+							<span className={styles.selectedFilesHint}>PNG, JPG, SVG, PDF</span>
 						</div>
-						<IconButton className={styles.iconButton} onClick={handleReset} size="small" aria-label="Clear files">
+						<IconButton className={styles.clearButton} onClick={handleReset} size="small" aria-label="Clear files">
 							<CloseOutlinedIcon />
 						</IconButton>
 					</div>
+				) : (
+					<div className={styles.emptyState}>PNG, JPG, SVG, PDF</div>
+				)}
+			</div>
 
-					<div className={styles.fileList}>
-						{documents.map((document, index) => (
-							<div key={`${document.name}-${document.lastModified}-${index}`} className={styles.selectedFile}>
-								<span className={styles.fileName} title={document.name}>
-									{document.name}
-								</span>
-								<IconButton
-									className={styles.iconButton}
-									onClick={() => handleRemoveDocument(index)}
-									size="small"
-									aria-label={`Remove ${document.name}`}
-								>
-									<CloseOutlinedIcon />
-								</IconButton>
+			{documents && documents.length > 0 ? (
+				<div className={styles.fileList}>
+					{documents.map((document, index) => (
+						<div key={`${document.name}-${document.lastModified}-${index}`} className={styles.selectedFile}>
+							<div className={styles.fileMeta}>
+								<div className={styles.fileIcon}>
+									<DescriptionOutlinedIcon fontSize="small" />
+								</div>
+								<div className={styles.fileText}>
+									<span className={styles.fileName} title={document.name}>
+										{document.name}
+									</span>
+									<span className={styles.fileSize}>{formatFileSize(document.size)}</span>
+								</div>
 							</div>
-						))}
-					</div>
-				</>
+							<IconButton
+								className={styles.iconButton}
+								onClick={() => handleRemoveDocument(index)}
+								size="small"
+								aria-label={`Remove ${document.name}`}
+							>
+								<CloseOutlinedIcon />
+							</IconButton>
+						</div>
+					))}
+				</div>
 			) : null}
 
 			{toArray(error)?.map((err) => (
