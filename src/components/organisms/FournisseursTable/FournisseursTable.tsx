@@ -6,7 +6,7 @@ import { AgGridReact, CustomCellRendererProps } from 'ag-grid-react';
 import dayjs from 'dayjs';
 import { FC, useEffect, useMemo, useRef, useState } from 'react';
 import { AppButton, TableStateOverlay } from '~components/atoms';
-import { buildPdfFileName, classes, downloadBlobFile } from '~helpers';
+import { buildPdfFileName, classes, previewPdfBlobFile } from '~helpers';
 import { useGetAllFournisseurs } from '~hooks/fournisseurs';
 import { useTranslation } from '~i18n';
 import { API_BASE_URL } from '~services/urls';
@@ -74,7 +74,7 @@ const renderFournisseurName = (data: CustomCellRendererProps<FournisseurRow>) =>
 			if (!response.ok) throw new Error('Failed to export PDF');
 
 			const blob = await response.blob();
-			downloadBlobFile(
+			previewPdfBlobFile(
 				blob,
 				buildPdfFileName('Fournisseur', [fournisseurData.fournisseurId, fournisseurData.fournisseurName, 'cargoes'])
 			);
@@ -356,7 +356,7 @@ export const FournisseursTable: FC<FournisseursTableProps> = ({
 			if (!response.ok) throw new Error('Failed to export PDF');
 
 			const blob = await response.blob();
-			downloadBlobFile(
+			previewPdfBlobFile(
 				blob,
 				buildPdfFileName('Fournisseurs', [
 					selectedFournisseur ? `fournisseur_${selectedFournisseur}` : undefined,

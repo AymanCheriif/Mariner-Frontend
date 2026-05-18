@@ -5,7 +5,7 @@ import 'ag-grid-community/styles/ag-theme-quartz.css';
 import { AgGridReact, CustomCellRendererProps } from 'ag-grid-react';
 import { FC, useEffect, useMemo, useRef, useState } from 'react';
 import { AppButton, TableStateOverlay } from '~components/atoms';
-import { buildPdfFileName, classes, downloadBlobFile } from '~helpers';
+import { buildPdfFileName, classes, previewPdfBlobFile } from '~helpers';
 import { API_BASE_URL } from '~services/urls';
 import { SubCategorySummaryDTO } from '~services/subcategories/types';
 import styles from './SubCategoriesTable.module.css';
@@ -56,7 +56,7 @@ const renderSubCategory = (data: CustomCellRendererProps<SubCategoryRow>) => {
 			if (!response.ok) throw new Error('Failed to export PDF');
 
 			const blob = await response.blob();
-			downloadBlobFile(blob, buildPdfFileName('Subcategory', [subCategoryData.subCategory, 'receivers']));
+			previewPdfBlobFile(blob, buildPdfFileName('Subcategory', [subCategoryData.subCategory, 'receivers']));
 
 			data.context.showToast?.('PDF exported successfully', 'success');
 		} catch (err) {
@@ -261,7 +261,7 @@ export const SubCategoriesTable: FC<SubCategoriesTableProps> = ({
 			if (!response.ok) throw new Error('Failed to export PDF');
 
 			const blob = await response.blob();
-			downloadBlobFile(
+			previewPdfBlobFile(
 				blob,
 				buildPdfFileName('Subcategories', [
 					visibleSubCategories.length === 1 ? visibleSubCategories[0] : undefined,

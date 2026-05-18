@@ -45,6 +45,96 @@ export const downloadBlobFile = (blob: Blob, fileName: string) => {
 	window.URL.revokeObjectURL(url);
 };
 
+const escapeHtml = (value: string) =>
+	value
+		.replace(/&/g, '&amp;')
+		.replace(/</g, '&lt;')
+		.replace(/>/g, '&gt;')
+		.replace(/"/g, '&quot;')
+		.replace(/'/g, '&#39;');
+
+export const previewPdfBlobFile = (blob: Blob, fileName: string) => {
+	const url = window.URL.createObjectURL(blob);
+	const previewWindow = window.open('', '_blank', 'noopener,noreferrer');
+
+	if (!previewWindow) {
+		downloadBlobFile(blob, fileName);
+		return;
+	}
+
+	const safeTitle = escapeHtml(fileName);
+	const serializedUrl = JSON.stringify(url);
+	const serializedFileName = JSON.stringify(fileName);
+
+	previewWindow.document.open();
+	previewWindow.document.write(`
+		<!DOCTYPE html>
+		<html lang="en">
+			<head>
+				<meta charset="UTF-8" />
+				<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+				<title>${safeTitle}</title>
+				<style>
+					body { margin: 0; font-family: Arial, sans-serif; background: #f3f4f6; }
+					.toolbar {
+						height: 56px;
+						display: flex;
+						align-items: center;
+						justify-content: space-between;
+						padding: 0 16px;
+						background: #111827;
+						color: white;
+						box-sizing: border-box;
+					}
+					.title { font-size: 14px; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+					.actions { display: flex; gap: 12px; }
+					button {
+						border: 0;
+						border-radius: 8px;
+						padding: 8px 12px;
+						cursor: pointer;
+						font-weight: 600;
+					}
+					.primary { background: #2563eb; color: white; }
+					.secondary { background: white; color: #111827; }
+					iframe { width: 100%; height: calc(100vh - 56px); border: 0; background: white; }
+				</style>
+			</head>
+			<body>
+				<div class="toolbar">
+					<div class="title">${safeTitle}</div>
+					<div class="actions">
+						<button class="secondary" id="printBtn">Print</button>
+						<button class="primary" id="downloadBtn">Download</button>
+					</div>
+				</div>
+				<iframe id="pdfFrame" title=${JSON.stringify(fileName)} src=${serializedUrl}></iframe>
+				<script>
+					const blobUrl = ${serializedUrl};
+					const downloadName = ${serializedFileName};
+					const frame = document.getElementById('pdfFrame');
+					document.getElementById('downloadBtn').addEventListener('click', () => {
+						const link = document.createElement('a');
+						link.href = blobUrl;
+						link.download = downloadName;
+						document.body.appendChild(link);
+						link.click();
+						link.remove();
+					});
+					document.getElementById('printBtn').addEventListener('click', () => {
+						if (frame && frame.contentWindow) {
+							frame.contentWindow.focus();
+							frame.contentWindow.print();
+						}
+					});
+					window.addEventListener('beforeunload', () => URL.revokeObjectURL(blobUrl));
+				</script>
+			</body>
+		</html>
+	`);
+	previewWindow.document.close();
+};
+
 export const toArray = <T>(data: T | T[] | undefined) => {
 	if (data === undefined) {
 		return [];

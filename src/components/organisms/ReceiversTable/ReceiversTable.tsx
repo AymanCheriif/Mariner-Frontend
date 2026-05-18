@@ -6,7 +6,7 @@ import { AgGridReact, CustomCellRendererProps } from 'ag-grid-react';
 import dayjs from 'dayjs';
 import { FC, useMemo, useRef, useState, useEffect } from 'react';
 import { AppButton, TableStateOverlay } from '~components/atoms';
-import { buildPdfFileName, classes, downloadBlobFile } from '~helpers';
+import { buildPdfFileName, classes, previewPdfBlobFile } from '~helpers';
 import { useTranslation } from '~i18n';
 import { useGetAllReceivers } from '~hooks/receivers';
 import { ReceiverSummaryDTO, CargoDetailsDTO } from '~services/receivers/types';
@@ -81,7 +81,7 @@ const renderActions = (data: CustomCellRendererProps<ReceiverRow>) => {
 			});
 			if (!response.ok) throw new Error('Failed to export PDF');
 			const blob = await response.blob();
-			downloadBlobFile(blob, buildPdfFileName('Receiver', [receiverData.receiverId, receiverData.receiverName, 'cargoes']));
+			previewPdfBlobFile(blob, buildPdfFileName('Receiver', [receiverData.receiverId, receiverData.receiverName, 'cargoes']));
 			if (data.context && data.context.showToast) {
 				data.context.showToast('PDF exported successfully', 'success');
 			}
@@ -593,7 +593,7 @@ export const ReceiversTable: FC<ReceiversTableProps> = ({
 			if (!response.ok) throw new Error('Failed to export PDF');
 
 			const blob = await response.blob();
-			downloadBlobFile(
+			previewPdfBlobFile(
 				blob,
 				buildPdfFileName('Receivers', [
 					selectedReceiver ? `receiver_${selectedReceiver}` : undefined,

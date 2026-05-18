@@ -1,4 +1,4 @@
-import { apiClient, buildPdfFileName, downloadBlobFile, updateEmptyStringsToNull } from '~helpers';
+import { apiClient, buildPdfFileName, previewPdfBlobFile, updateEmptyStringsToNull } from '~helpers';
 import { API_ENDPOINTS } from '~services/urls';
 import { GetShipsFilter, ShipDTO } from './types';
 
@@ -98,7 +98,7 @@ const exportShipsPDF = async (
 
 		// Create blob from the returned data
 		const blob = new Blob([blobData], { type: 'application/pdf' });
-		downloadBlobFile(
+		previewPdfBlobFile(
 			blob,
 			fileName ||
 				buildPdfFileName(isFleet ? 'Fleets' : 'Report', [
@@ -180,7 +180,7 @@ const exportShipsByAgentPDF = async (agentName: string): Promise<void> => {
 	});
 
 	const blob = new Blob([blobData], { type: 'application/pdf' });
-	downloadBlobFile(blob, buildPdfFileName('Agent', [agentName, 'ships']));
+	previewPdfBlobFile(blob, buildPdfFileName('Agent', [agentName, 'ships']));
 };
 
 export const addShipService = {

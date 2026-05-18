@@ -6,7 +6,7 @@ import { AgGridReact, CustomCellRendererProps } from 'ag-grid-react';
 import dayjs, { Dayjs } from 'dayjs';
 import { FC, useEffect, useMemo, useRef, useState } from 'react';
 import { AppButton, DocumentViewer, TableStateOverlay } from '~components/atoms';
-import { buildPdfFileName, classes, downloadBlobFile } from '~helpers';
+import { buildPdfFileName, classes, previewPdfBlobFile } from '~helpers';
 import { useGetCargoCategories } from '~hooks/cargoTaxonomy';
 import { useTranslation } from '~i18n';
 import { API_BASE_URL } from '~services/urls';
@@ -98,7 +98,7 @@ const renderImo = (data: CustomCellRendererProps<ShipRow>) => {
 			});
 			if (!response.ok) throw new Error('Failed to export PDF');
 			const blob = await response.blob();
-			downloadBlobFile(blob, buildPdfFileName('Ship', [shipData.name, `IMO_${shipData.imo}`, 'cargoes']));
+			previewPdfBlobFile(blob, buildPdfFileName('Ship', [shipData.name, `IMO_${shipData.imo}`, 'cargoes']));
 			data.context.showToast?.('PDF exported successfully', 'success');
 		} catch (err) {
 			console.error('Failed to export PDF:', err);
