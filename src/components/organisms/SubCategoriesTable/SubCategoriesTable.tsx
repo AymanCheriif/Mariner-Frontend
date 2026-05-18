@@ -3,36 +3,29 @@ import { ColDef } from 'ag-grid-community';
 import 'ag-grid-community/styles/ag-grid.css';
 import 'ag-grid-community/styles/ag-theme-quartz.css';
 import { AgGridReact, CustomCellRendererProps } from 'ag-grid-react';
-import dayjs from 'dayjs';
 import { FC, useEffect, useMemo, useRef, useState } from 'react';
 import { AppButton, ModalHeaderActions, TableStateOverlay, getModalContainerSx } from '~components/atoms';
 import { buildPdfFileName, classes, previewPdfBlobFile } from '~helpers';
 import { API_BASE_URL } from '~services/urls';
-import { SubCategorySummaryDTO } from '~services/subcategories/types';
+import { ReceiverTonnageDTO, SubCategorySummaryDTO } from '~services/subcategories/types';
 import styles from './SubCategoriesTable.module.css';
 
 interface SubCategoryRow {
 	subCategory: string;
 	totalTonnage: number;
 	receiverCount: number;
-	latestBerthingDate: string | null;
 }
 
-const formatDisplayDate = (value?: string | null) => {
-	if (!value) {
-		return '—';
-	}
+const currentYear = new Date().getFullYear();
+const previousYear = currentYear - 1;
 
-	const parsed = dayjs(value);
-	return parsed.isValid() ? parsed.format('DD/MM/YYYY') : '—';
-};
+const formatTonnage = (value?: number | null) => value?.toLocaleString() || '0';
 
 const mapSubCategoryToRow = (dto: SubCategorySummaryDTO): SubCategoryRow => {
 	return {
 		subCategory: dto.subCategory,
 		totalTonnage: dto.totalTonnage,
 		receiverCount: dto.receivers.length,
-		latestBerthingDate: dto.latestBerthingDate ?? null,
 	};
 };
 
@@ -121,20 +114,28 @@ const renderSubCategory = (data: CustomCellRendererProps<SubCategoryRow>) => {
 
 					<Box sx={{ mb: 2, p: 2, bgcolor: '#f5f5f5', borderRadius: 2 }}>
 						<Box>
+							<strong>{previousYear} Tonnage:</strong>
+							<span style={{ marginLeft: '8px', fontSize: '18px', fontWeight: 600, color: '#1976d2' }}>
+								{formatTonnage(subCategoryData.previousYearTonnage)} MT
+							</span>
+						</Box>
+						<Box sx={{ mt: 1 }}>
+							<strong>{currentYear} Tonnage:</strong>
+							<span style={{ marginLeft: '8px', fontSize: '18px', fontWeight: 600, color: '#1976d2' }}>
+								{formatTonnage(subCategoryData.currentYearTonnage)} MT
+							</span>
+						</Box>
+						<Box sx={{ mt: 1 }}>
 							<strong>Total Tonnage:</strong>
 							<span style={{ marginLeft: '8px', fontSize: '18px', fontWeight: 600, color: '#1976d2' }}>
-								{subCategoryData.totalTonnage.toLocaleString()} MT
+								{formatTonnage(subCategoryData.totalTonnage)} MT
 							</span>
 						</Box>
 						<Box sx={{ mt: 1 }}>
 							<strong>Total Receivers:</strong>
 							<span style={{ marginLeft: '8px' }}>{subCategoryData.receivers.length}</span>
 						</Box>
-						<Box sx={{ mt: 1 }}>
-							<strong>Latest Date:</strong>
-							<span style={{ marginLeft: '8px' }}>{formatDisplayDate(subCategoryData.latestBerthingDate)}</span>
-						</Box>
-						<Box sx={{ mt: 1, color: 'text.secondary', fontSize: '0.9rem' }}>Reporting window: last 2 years only</Box>
+						<Box sx={{ mt: 1, color: 'text.secondary', fontSize: '0.9rem' }}>Reporting window: {previousYear} and {currentYear} only</Box>
 					</Box>
 
 					<Box sx={{ mt: 2 }}>
@@ -153,18 +154,30 @@ const renderSubCategory = (data: CustomCellRendererProps<SubCategoryRow>) => {
 											Receiver Name
 										</th>
 										<th style={{ padding: '8px', textAlign: 'right', backgroundColor: '#f5f5f5', borderBottom: '1px solid rgba(224, 224, 224, 1)' }}>
+											{previousYear} (MT)
+										</th>
+										<th style={{ padding: '8px', textAlign: 'right', backgroundColor: '#f5f5f5', borderBottom: '1px solid rgba(224, 224, 224, 1)' }}>
+											{currentYear} (MT)
+										</th>
+										<th style={{ padding: '8px', textAlign: 'right', backgroundColor: '#f5f5f5', borderBottom: '1px solid rgba(224, 224, 224, 1)' }}>
 											Tonnage (MT)
 										</th>
 									</tr>
 								</thead>
 								<tbody>
-									{subCategoryData.receivers.map((receiver: any, idx: number) => (
+									{subCategoryData.receivers.map((receiver: ReceiverTonnageDTO, idx: number) => (
 										<tr key={idx} style={{ backgroundColor: idx % 2 === 0 ? '#ffffff' : '#fafafa' }}>
 											<td style={{ padding: '8px', borderBottom: '1px solid rgba(224, 224, 224, 1)' }}>
 												{receiver.receiverName}
 											</td>
 											<td style={{ padding: '8px', borderBottom: '1px solid rgba(224, 224, 224, 1)', textAlign: 'right' }}>
-												{receiver.tonnage.toLocaleString()}
+												{formatTonnage(receiver.previousYearTonnage)}
+											</td>
+											<td style={{ padding: '8px', borderBottom: '1px solid rgba(224, 224, 224, 1)', textAlign: 'right' }}>
+												{formatTonnage(receiver.currentYearTonnage)}
+											</td>
+											<td style={{ padding: '8px', borderBottom: '1px solid rgba(224, 224, 224, 1)', textAlign: 'right' }}>
+												{formatTonnage(receiver.tonnage)}
 											</td>
 										</tr>
 									))}
@@ -302,22 +315,10 @@ export const SubCategoriesTable: FC<SubCategoriesTableProps> = ({
 				width: 300,
 			},
 			{
-				field: 'latestBerthingDate',
-				headerName: 'Latest Date',
-				width: 180,
-				headerTooltip: 'Latest berthing date from the last two years',
-				valueFormatter: (params) => formatDisplayDate(params.value),
-				comparator: (valueA, valueB) => {
-					const dateA = valueA ? dayjs(valueA).valueOf() : 0;
-					const dateB = valueB ? dayjs(valueB).valueOf() : 0;
-					return dateA - dateB;
-				},
-			},
-			{
 				field: 'totalTonnage',
 				headerName: 'Total Tonnage (MT)',
 				width: 200,
-				valueFormatter: (params) => params.value?.toLocaleString() || '0',
+				valueFormatter: (params) => formatTonnage(params.value),
 			},
 			{
 				field: 'receiverCount',
@@ -330,8 +331,6 @@ export const SubCategoriesTable: FC<SubCategoriesTableProps> = ({
 
 	return (
 		<div className={classes('ag-theme-quartz', styles.container)} style={{ height: 600, position: 'relative' }}>
-			<Box className={styles.caption}>Showing sub-category activity from the last 2 years.</Box>
-
 			<Box sx={{ display: 'flex', justifyContent: 'flex-end', mb: 2 }}>
 				<AppButton
 					onClick={handleExportFilteredPdf}
