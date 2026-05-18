@@ -5,7 +5,7 @@ import 'ag-grid-community/styles/ag-theme-quartz.css'; // Optional Theme applied
 import { AgGridReact, CustomCellRendererProps } from 'ag-grid-react';
 import { FC, useEffect, useMemo, useRef, useState } from 'react';
 import { AppButton, DocumentViewer } from '~components/atoms';
-import { classes } from '~helpers';
+import { buildPdfFileName, classes } from '~helpers';
 import { useTranslation } from '~i18n';
 import { addShipService } from '~services/addShip';
 import { ShipDTO } from '~services/addShip/types';
@@ -1044,7 +1044,17 @@ const FleetReportTable: FC = () => {
 			// Use the service function to handle PDF export with current filter
 			// Pass boardingPort filter (if selected) and isFleet=true to export only fleet ships
 			// subCategory is not used for fleets, so pass undefined
-			await addShipService.exportShipsPDF(selectedPort || undefined, undefined, undefined, true);
+			await addShipService.exportShipsPDF(
+				selectedPort || undefined,
+				undefined,
+				undefined,
+				true,
+				undefined,
+				undefined,
+				undefined,
+				undefined,
+				buildPdfFileName('Fleets', [selectedPort ? `port_${selectedPort}` : undefined])
+			);
 		} catch (error) {
 			console.error('Error exporting PDF:', error);
 			showToast('Failed to export PDF. Please try again.', 'error');

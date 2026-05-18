@@ -1,4 +1,4 @@
-import { apiClient, updateEmptyStringsToNull } from '~helpers';
+import { apiClient, buildPdfFileName, downloadBlobFile, updateEmptyStringsToNull } from '~helpers';
 import { API_ENDPOINTS } from '~services/urls';
 import { GetShipsFilter, ShipDTO } from './types';
 
@@ -73,7 +73,8 @@ const exportShipsPDF = async (
 	dateFrom?: string,
 	dateTo?: string,
 	category?: string,
-	shipIds?: string[]
+	shipIds?: string[],
+	fileName?: string
 ): Promise<void> => {
 	try {
 		// Build query parameters
@@ -97,16 +98,19 @@ const exportShipsPDF = async (
 
 		// Create blob from the returned data
 		const blob = new Blob([blobData], { type: 'application/pdf' });
-		const url = window.URL.createObjectURL(blob);
-
-		const link = document.createElement('a');
-		link.href = url;
-		link.download = 'ships.pdf';
-		document.body.appendChild(link);
-		link.click();
-
-		link.remove();
-		window.URL.revokeObjectURL(url);
+		downloadBlobFile(
+			blob,
+			fileName ||
+				buildPdfFileName(isFleet ? 'Fleets' : 'Report', [
+					boardingPort ? `port_${boardingPort}` : undefined,
+					receiverName ? `receiver_${receiverName}` : undefined,
+					subCategory ? `subcategory_${subCategory}` : undefined,
+					category ? `category_${category}` : undefined,
+					dateFrom ? `from_${dateFrom}` : undefined,
+					dateTo ? `to_${dateTo}` : undefined,
+					shipIds?.length ? `${shipIds.length}_ships` : undefined,
+				])
+		);
 	} catch (error) {
 		console.error('Error initiating PDF export:', error);
 		throw error;
@@ -176,14 +180,7 @@ const exportShipsByAgentPDF = async (agentName: string): Promise<void> => {
 	});
 
 	const blob = new Blob([blobData], { type: 'application/pdf' });
-	const url = window.URL.createObjectURL(blob);
-	const link = document.createElement('a');
-	link.href = url;
-	link.download = `agent_${agentName}_ships.pdf`;
-	document.body.appendChild(link);
-	link.click();
-	link.remove();
-	window.URL.revokeObjectURL(url);
+	downloadBlobFile(blob, buildPdfFileName('Agent', [agentName, 'ships']));
 };
 
 export const addShipService = {

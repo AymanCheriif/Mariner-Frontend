@@ -5,7 +5,7 @@ import 'ag-grid-community/styles/ag-theme-quartz.css';
 import { AgGridReact, CustomCellRendererProps } from 'ag-grid-react';
 import { FC, useEffect, useMemo, useRef, useState } from 'react';
 import { AppButton, TableStateOverlay } from '~components/atoms';
-import { classes } from '~helpers';
+import { buildPdfFileName, classes, downloadBlobFile } from '~helpers';
 import { API_BASE_URL } from '~services/urls';
 import { SubCategorySummaryDTO } from '~services/subcategories/types';
 import styles from './SubCategoriesTable.module.css';
@@ -56,14 +56,7 @@ const renderSubCategory = (data: CustomCellRendererProps<SubCategoryRow>) => {
 			if (!response.ok) throw new Error('Failed to export PDF');
 
 			const blob = await response.blob();
-			const urlBlob = window.URL.createObjectURL(blob);
-			const link = document.createElement('a');
-			link.href = urlBlob;
-			link.download = `subcategory_${subCategoryData.subCategory.replace(/ /g, '_')}_receivers.pdf`;
-			document.body.appendChild(link);
-			link.click();
-			link.remove();
-			window.URL.revokeObjectURL(urlBlob);
+			downloadBlobFile(blob, buildPdfFileName('Subcategory', [subCategoryData.subCategory, 'receivers']));
 
 			data.context.showToast?.('PDF exported successfully', 'success');
 		} catch (err) {
@@ -268,14 +261,13 @@ export const SubCategoriesTable: FC<SubCategoriesTableProps> = ({
 			if (!response.ok) throw new Error('Failed to export PDF');
 
 			const blob = await response.blob();
-			const urlBlob = window.URL.createObjectURL(blob);
-			const link = document.createElement('a');
-			link.href = urlBlob;
-			link.download = `subcategories_filtered_${new Date().toISOString().split('T')[0]}.pdf`;
-			document.body.appendChild(link);
-			link.click();
-			link.remove();
-			window.URL.revokeObjectURL(urlBlob);
+			downloadBlobFile(
+				blob,
+				buildPdfFileName('Subcategories', [
+					visibleSubCategories.length === 1 ? visibleSubCategories[0] : undefined,
+					hasActiveFilters ? `${visibleSubCategories.length}_items` : undefined,
+				])
+			);
 
 			showToast('PDF exported successfully', 'success');
 		} catch (err) {

@@ -6,7 +6,7 @@ import { AgGridReact, CustomCellRendererProps } from 'ag-grid-react';
 import dayjs from 'dayjs';
 import { FC, useMemo, useRef, useState, useEffect } from 'react';
 import { AppButton, TableStateOverlay } from '~components/atoms';
-import { classes } from '~helpers';
+import { buildPdfFileName, classes, downloadBlobFile } from '~helpers';
 import { useTranslation } from '~i18n';
 import { useGetAllReceivers } from '~hooks/receivers';
 import { ReceiverSummaryDTO, CargoDetailsDTO } from '~services/receivers/types';
@@ -81,14 +81,7 @@ const renderActions = (data: CustomCellRendererProps<ReceiverRow>) => {
 			});
 			if (!response.ok) throw new Error('Failed to export PDF');
 			const blob = await response.blob();
-			const urlBlob = window.URL.createObjectURL(blob);
-			const link = document.createElement('a');
-			link.href = urlBlob;
-			link.download = `receiver_${receiverData.receiverId}_cargoes.pdf`;
-			document.body.appendChild(link);
-			link.click();
-			link.remove();
-			window.URL.revokeObjectURL(urlBlob);
+			downloadBlobFile(blob, buildPdfFileName('Receiver', [receiverData.receiverId, receiverData.receiverName, 'cargoes']));
 			if (data.context && data.context.showToast) {
 				data.context.showToast('PDF exported successfully', 'success');
 			}
@@ -600,14 +593,15 @@ export const ReceiversTable: FC<ReceiversTableProps> = ({
 			if (!response.ok) throw new Error('Failed to export PDF');
 
 			const blob = await response.blob();
-			const urlBlob = window.URL.createObjectURL(blob);
-			const link = document.createElement('a');
-			link.href = urlBlob;
-			link.download = `receivers_filtered_${new Date().toISOString().split('T')[0]}.pdf`;
-			document.body.appendChild(link);
-			link.click();
-			link.remove();
-			window.URL.revokeObjectURL(urlBlob);
+			downloadBlobFile(
+				blob,
+				buildPdfFileName('Receivers', [
+					selectedReceiver ? `receiver_${selectedReceiver}` : undefined,
+					selectedSubCategory ? `subcategory_${selectedSubCategory}` : undefined,
+					receiverIdSearch.trim() ? `receiverId_${receiverIdSearch.trim()}` : undefined,
+					`${visibleReceiverIds.length}_items`,
+				])
+			);
 
 			showToast('PDF exported successfully', 'success');
 		} catch (err) {

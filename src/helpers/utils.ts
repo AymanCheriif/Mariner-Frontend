@@ -2,6 +2,49 @@ export const classes = (...classNames: (string | undefined | boolean)[]) => {
 	return classNames.filter((name) => typeof name === 'string').join(' ');
 };
 
+const MAX_FILENAME_SEGMENT_LENGTH = 48;
+const MAX_FILENAME_LENGTH = 180;
+
+export const sanitizePdfFileSegment = (value: string) => {
+	const normalizedValue = value
+		.normalize('NFD')
+		.replace(/[\u0300-\u036f]/g, '')
+		.trim()
+		.replace(/[^a-zA-Z0-9]+/g, '_')
+		.replace(/^_+|_+$/g, '');
+
+	return normalizedValue.slice(0, MAX_FILENAME_SEGMENT_LENGTH) || 'item';
+};
+
+export const buildPdfFileName = (
+	baseName: string,
+	segments: Array<string | number | null | undefined | false>,
+	fallbackSegment = 'all'
+) => {
+	const safeBaseName = sanitizePdfFileSegment(baseName);
+	const safeSegments = segments
+		.filter((segment): segment is string | number => Boolean(segment))
+		.map((segment) => sanitizePdfFileSegment(String(segment)))
+		.filter(Boolean);
+
+	const fileName = [safeBaseName, ...(safeSegments.length > 0 ? safeSegments : [fallbackSegment])].join('_');
+
+	return `${fileName.slice(0, MAX_FILENAME_LENGTH)}.pdf`;
+};
+
+export const downloadBlobFile = (blob: Blob, fileName: string) => {
+	const url = window.URL.createObjectURL(blob);
+	const link = document.createElement('a');
+
+	link.href = url;
+	link.download = fileName;
+	document.body.appendChild(link);
+	link.click();
+	link.remove();
+
+	window.URL.revokeObjectURL(url);
+};
+
 export const toArray = <T>(data: T | T[] | undefined) => {
 	if (data === undefined) {
 		return [];

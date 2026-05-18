@@ -6,7 +6,7 @@ import { AgGridReact, CustomCellRendererProps } from 'ag-grid-react';
 import dayjs from 'dayjs';
 import { FC, useEffect, useMemo, useRef, useState } from 'react';
 import { AppButton, TableStateOverlay } from '~components/atoms';
-import { classes } from '~helpers';
+import { buildPdfFileName, classes, downloadBlobFile } from '~helpers';
 import { useGetAllFournisseurs } from '~hooks/fournisseurs';
 import { useTranslation } from '~i18n';
 import { API_BASE_URL } from '~services/urls';
@@ -74,14 +74,10 @@ const renderFournisseurName = (data: CustomCellRendererProps<FournisseurRow>) =>
 			if (!response.ok) throw new Error('Failed to export PDF');
 
 			const blob = await response.blob();
-			const urlBlob = window.URL.createObjectURL(blob);
-			const link = document.createElement('a');
-			link.href = urlBlob;
-			link.download = `fournisseur_${data.data?.fournisseurId}_cargoes.pdf`;
-			document.body.appendChild(link);
-			link.click();
-			link.remove();
-			window.URL.revokeObjectURL(urlBlob);
+			downloadBlobFile(
+				blob,
+				buildPdfFileName('Fournisseur', [fournisseurData.fournisseurId, fournisseurData.fournisseurName, 'cargoes'])
+			);
 
 			data.context.showToast?.('PDF exported successfully', 'success');
 		} catch (err) {
@@ -360,14 +356,14 @@ export const FournisseursTable: FC<FournisseursTableProps> = ({
 			if (!response.ok) throw new Error('Failed to export PDF');
 
 			const blob = await response.blob();
-			const urlBlob = window.URL.createObjectURL(blob);
-			const link = document.createElement('a');
-			link.href = urlBlob;
-			link.download = `fournisseurs_filtered_${new Date().toISOString().split('T')[0]}.pdf`;
-			document.body.appendChild(link);
-			link.click();
-			link.remove();
-			window.URL.revokeObjectURL(urlBlob);
+			downloadBlobFile(
+				blob,
+				buildPdfFileName('Fournisseurs', [
+					selectedFournisseur ? `fournisseur_${selectedFournisseur}` : undefined,
+					selectedSubCategory ? `subcategory_${selectedSubCategory}` : undefined,
+					`${visibleFournisseurIds.length}_items`,
+				])
+			);
 
 			showToast('PDF exported successfully', 'success');
 		} catch (err) {

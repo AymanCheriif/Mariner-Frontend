@@ -6,7 +6,7 @@ import { AgGridReact, CustomCellRendererProps } from 'ag-grid-react';
 import dayjs from 'dayjs';
 import { FC, useEffect, useMemo, useRef, useState } from 'react';
 import { AppButton, DocumentViewer } from '~components/atoms';
-import { classes } from '~helpers';
+import { buildPdfFileName, classes } from '~helpers';
 import { useGetAllShips } from '~hooks';
 import { useTranslation } from '~i18n';
 import { addShipService } from '~services/addShip';
@@ -1228,7 +1228,16 @@ const ShipReportTable: FC = () => {
 				selectedPort || undefined,
 				selectedReceiver || undefined,
 				selectedSubCategory || undefined,
-				false
+				false,
+				undefined,
+				undefined,
+				undefined,
+				undefined,
+				buildPdfFileName('Report', [
+					selectedPort ? `port_${selectedPort}` : undefined,
+					selectedReceiver ? `receiver_${selectedReceiver}` : undefined,
+					selectedSubCategory ? `subcategory_${selectedSubCategory}` : undefined,
+				])
 			);
 		} catch (error) {
 			console.error('Error exporting PDF:', error);

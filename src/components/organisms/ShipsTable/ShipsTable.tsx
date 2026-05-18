@@ -6,7 +6,7 @@ import { AgGridReact, CustomCellRendererProps } from 'ag-grid-react';
 import dayjs, { Dayjs } from 'dayjs';
 import { FC, useEffect, useMemo, useRef, useState } from 'react';
 import { AppButton, DocumentViewer, TableStateOverlay } from '~components/atoms';
-import { classes } from '~helpers';
+import { buildPdfFileName, classes, downloadBlobFile } from '~helpers';
 import { useGetCargoCategories } from '~hooks/cargoTaxonomy';
 import { useTranslation } from '~i18n';
 import { API_BASE_URL } from '~services/urls';
@@ -98,14 +98,7 @@ const renderImo = (data: CustomCellRendererProps<ShipRow>) => {
 			});
 			if (!response.ok) throw new Error('Failed to export PDF');
 			const blob = await response.blob();
-			const urlBlob = window.URL.createObjectURL(blob);
-			const link = document.createElement('a');
-			link.href = urlBlob;
-			link.download = `ship_${shipData.imo}_cargoes.pdf`;
-			document.body.appendChild(link);
-			link.click();
-			link.remove();
-			window.URL.revokeObjectURL(urlBlob);
+			downloadBlobFile(blob, buildPdfFileName('Ship', [shipData.name, `IMO_${shipData.imo}`, 'cargoes']));
 			data.context.showToast?.('PDF exported successfully', 'success');
 		} catch (err) {
 			console.error('Failed to export PDF:', err);
@@ -1599,7 +1592,18 @@ export const ShipsTable: FC<ShipsTableProps> = ({
 				dateFrom ? dateFrom.format('YYYY-MM-DD') : undefined,
 				dateTo ? dateTo.format('YYYY-MM-DD') : undefined,
 				selectedCategory || undefined,
-				hasClientSideExportFilters ? visibleShipIds : undefined
+				hasClientSideExportFilters ? visibleShipIds : undefined,
+				buildPdfFileName('Report', [
+					selectedCategory ? `category_${selectedCategory}` : undefined,
+					selectedSubCategory ? `subcategory_${selectedSubCategory}` : undefined,
+					selectedReceiver ? `receiver_${selectedReceiver}` : undefined,
+					selectedPort ? `port_${selectedPort}` : undefined,
+					dateFrom ? `from_${dateFrom.format('YYYY-MM-DD')}` : undefined,
+					dateTo ? `to_${dateTo.format('YYYY-MM-DD')}` : undefined,
+					dwtFrom ? `dwt_from_${dwtFrom}` : undefined,
+					dwtTo ? `dwt_to_${dwtTo}` : undefined,
+					hasClientSideExportFilters ? `${visibleShipIds.length}_ships` : undefined,
+				])
 			);
 		} catch (error) {
 			console.error('Error exporting PDF:', error);
