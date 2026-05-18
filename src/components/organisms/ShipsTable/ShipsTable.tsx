@@ -5,7 +5,7 @@ import 'ag-grid-community/styles/ag-theme-quartz.css';
 import { AgGridReact, CustomCellRendererProps } from 'ag-grid-react';
 import dayjs, { Dayjs } from 'dayjs';
 import { FC, useEffect, useMemo, useRef, useState } from 'react';
-import { AppButton, DocumentViewer, TableStateOverlay } from '~components/atoms';
+import { AppButton, DocumentViewer, ModalHeaderActions, TableStateOverlay, getModalContainerSx } from '~components/atoms';
 import { buildPdfFileName, classes, previewPdfBlobFile } from '~helpers';
 import { useGetCargoCategories } from '~hooks/cargoTaxonomy';
 import { useTranslation } from '~i18n';
@@ -15,7 +15,6 @@ import { ShipDTO } from '~services/addShip/types';
 import styles from './ShipsTable.module.css';
 import DeleteIcon from '@mui/icons-material/Delete';
 import EditIcon from '@mui/icons-material/Edit';
-import CloseIcon from '@mui/icons-material/Close';
 import DescriptionIcon from '@mui/icons-material/Description';
 import InfoIcon from '@mui/icons-material/Info';
 import PhoneIcon from '@mui/icons-material/Phone';
@@ -65,6 +64,7 @@ const mapShipDtoToShipRow = (dto: ShipDTO): ShipRow => {
 
 const renderImo = (data: CustomCellRendererProps<ShipRow>) => {
 	const [openCargoesModal, setOpenCargoesModal] = useState(false);
+	const [isCargoesModalFullscreen, setIsCargoesModalFullscreen] = useState(false);
 	const shipData = data.context.shipDtoMap.get(data.data?.id);
 
 	const handleDoubleClick = () => {
@@ -72,7 +72,17 @@ const renderImo = (data: CustomCellRendererProps<ShipRow>) => {
 	};
 
 	const handleCloseCargoesModal = () => {
+		setIsCargoesModalFullscreen(false);
 		setOpenCargoesModal(false);
+	};
+
+	const handleCargoesModalClose = (_event: object, reason: 'backdropClick' | 'escapeKeyDown') => {
+		if (reason === 'escapeKeyDown' && isCargoesModalFullscreen) {
+			setIsCargoesModalFullscreen(false);
+			return;
+		}
+
+		handleCloseCargoesModal();
 	};
 
 	// Calculate total tonnage for this ship
@@ -136,26 +146,11 @@ const renderImo = (data: CustomCellRendererProps<ShipRow>) => {
 			{/* Cargoes Modal */}
 			<Modal
 				open={openCargoesModal}
-				onClose={handleCloseCargoesModal}
+				onClose={handleCargoesModalClose}
 				aria-labelledby="cargoes-modal-title"
 				aria-describedby="cargoes-modal-description"
 			>
-				<Box
-					sx={{
-						position: 'absolute',
-						top: '50%',
-						left: '50%',
-						transform: 'translate(-50%, -50%)',
-						width: 900,
-						maxHeight: '80vh',
-						overflow: 'auto',
-						bgcolor: 'background.paper',
-						borderRadius: '16px',
-						boxShadow: '0 8px 32px rgba(0, 0, 0, 0.12)',
-						p: 4,
-						outline: 'none',
-					}}
-				>
+				<Box sx={getModalContainerSx(isCargoesModalFullscreen, 1100)}>
 					<Box
 						sx={{
 							display: 'flex',
@@ -207,16 +202,11 @@ const renderImo = (data: CustomCellRendererProps<ShipRow>) => {
 								))}
 							</Box>
 						</Box>
-						<IconButton
-							onClick={handleCloseCargoesModal}
-							aria-label="Close"
-							size="small"
-							sx={{
-								color: 'rgba(0, 0, 0, 0.54)',
-							}}
-						>
-							<CloseIcon />
-						</IconButton>
+						<ModalHeaderActions
+							isFullscreen={isCargoesModalFullscreen}
+							onToggleFullscreen={() => setIsCargoesModalFullscreen((prev) => !prev)}
+							onClose={handleCloseCargoesModal}
+						/>
 					</Box>
 
 					{/* Total Tonnage Display */}
@@ -386,12 +376,14 @@ const renderImo = (data: CustomCellRendererProps<ShipRow>) => {
 
 const renderAgent = (data: CustomCellRendererProps<ShipRow>) => {
 	const [openAgentModal, setOpenAgentModal] = useState(false);
+	const [isAgentModalFullscreen, setIsAgentModalFullscreen] = useState(false);
 	const [agentShips, setAgentShips] = useState<ShipDTO[]>([]);
 	const [isLoading, setIsLoading] = useState(false);
 	const [isExportingPdf, setIsExportingPdf] = useState(false);
 	const agentName = data.value || 'NAVLION';
 
 	const handleAgentClick = async () => {
+		setIsAgentModalFullscreen(false);
 		setOpenAgentModal(true);
 		setIsLoading(true);
 		try {
@@ -403,6 +395,20 @@ const renderAgent = (data: CustomCellRendererProps<ShipRow>) => {
 		} finally {
 			setIsLoading(false);
 		}
+	};
+
+	const handleCloseAgentModal = () => {
+		setIsAgentModalFullscreen(false);
+		setOpenAgentModal(false);
+	};
+
+	const handleAgentModalClose = (_event: object, reason: 'backdropClick' | 'escapeKeyDown') => {
+		if (reason === 'escapeKeyDown' && isAgentModalFullscreen) {
+			setIsAgentModalFullscreen(false);
+			return;
+		}
+
+		handleCloseAgentModal();
 	};
 
 	const calculateTotalTonnage = () => {
@@ -445,32 +451,19 @@ const renderAgent = (data: CustomCellRendererProps<ShipRow>) => {
 			{/* Agent Details Modal */}
 			<Modal
 				open={openAgentModal}
-				onClose={() => setOpenAgentModal(false)}
+				onClose={handleAgentModalClose}
 				aria-labelledby="agent-modal-title"
 			>
-				<Box
-					sx={{
-						position: 'absolute',
-						top: '50%',
-						left: '50%',
-						transform: 'translate(-50%, -50%)',
-						width: 1000,
-						maxHeight: '80vh',
-						overflow: 'auto',
-						bgcolor: 'background.paper',
-						borderRadius: '16px',
-						boxShadow: '0 8px 32px rgba(0, 0, 0, 0.12)',
-						p: 4,
-						outline: 'none',
-					}}
-				>
+				<Box sx={getModalContainerSx(isAgentModalFullscreen, 1200)}>
 					<Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
 						<h2 id="agent-modal-title" style={{ margin: 0, fontSize: '22px', fontWeight: 600 }}>
 							Agent: {agentName}
 						</h2>
-						<IconButton onClick={() => setOpenAgentModal(false)} aria-label="Close" size="small">
-							<CloseIcon />
-						</IconButton>
+						<ModalHeaderActions
+							isFullscreen={isAgentModalFullscreen}
+							onToggleFullscreen={() => setIsAgentModalFullscreen((prev) => !prev)}
+							onClose={handleCloseAgentModal}
+						/>
 					</Box>
 
 					{isLoading ? (
@@ -572,7 +565,7 @@ const renderAgent = (data: CustomCellRendererProps<ShipRow>) => {
 									}}
 								/>
 								<AppButton
-									onClick={() => setOpenAgentModal(false)}
+									onClick={handleCloseAgentModal}
 									value="Close"
 									variant="outlined"
 									sx={{
@@ -599,6 +592,9 @@ const renderActions = (data: CustomCellRendererProps<ShipRow>) => {
 	const [openDeleteModal, setOpenDeleteModal] = useState(false);
 	const [openDocumentsModal, setOpenDocumentsModal] = useState(false);
 	const [openInfoModal, setOpenInfoModal] = useState(false);
+	const [isDeleteModalFullscreen, setIsDeleteModalFullscreen] = useState(false);
+	const [isDocumentsModalFullscreen, setIsDocumentsModalFullscreen] = useState(false);
+	const [isInfoModalFullscreen, setIsInfoModalFullscreen] = useState(false);
 
 	const shipData = data.context.shipDtoMap.get(data.data?.id);
 
@@ -624,7 +620,17 @@ const renderActions = (data: CustomCellRendererProps<ShipRow>) => {
 	};
 
 	const handleDeleteCancel = () => {
+		setIsDeleteModalFullscreen(false);
 		setOpenDeleteModal(false);
+	};
+
+	const handleDeleteModalClose = (_event: object, reason: 'backdropClick' | 'escapeKeyDown') => {
+		if (reason === 'escapeKeyDown' && isDeleteModalFullscreen) {
+			setIsDeleteModalFullscreen(false);
+			return;
+		}
+
+		handleDeleteCancel();
 	};
 
 	const handleUpdate = () => {
@@ -632,19 +638,41 @@ const renderActions = (data: CustomCellRendererProps<ShipRow>) => {
 	};
 
 	const handleViewDocuments = () => {
+		setIsDocumentsModalFullscreen(false);
 		setOpenDocumentsModal(true);
 	};
 
 	const handleCloseDocumentsModal = () => {
+		setIsDocumentsModalFullscreen(false);
 		setOpenDocumentsModal(false);
 	};
 
+	const handleDocumentsModalClose = (_event: object, reason: 'backdropClick' | 'escapeKeyDown') => {
+		if (reason === 'escapeKeyDown' && isDocumentsModalFullscreen) {
+			setIsDocumentsModalFullscreen(false);
+			return;
+		}
+
+		handleCloseDocumentsModal();
+	};
+
 	const handleViewInfo = () => {
+		setIsInfoModalFullscreen(false);
 		setOpenInfoModal(true);
 	};
 
 	const handleCloseInfoModal = () => {
+		setIsInfoModalFullscreen(false);
 		setOpenInfoModal(false);
+	};
+
+	const handleInfoModalClose = (_event: object, reason: 'backdropClick' | 'escapeKeyDown') => {
+		if (reason === 'escapeKeyDown' && isInfoModalFullscreen) {
+			setIsInfoModalFullscreen(false);
+			return;
+		}
+
+		handleCloseInfoModal();
 	};
 
 	const handlePrintShipDetails = async () => {
@@ -774,24 +802,17 @@ const renderActions = (data: CustomCellRendererProps<ShipRow>) => {
 			{/* Confirmation Modal */}
 			<Modal
 				open={openDeleteModal}
-				onClose={handleDeleteCancel}
+				onClose={handleDeleteModalClose}
 				aria-labelledby="delete-ship-modal-title"
 				aria-describedby="delete-ship-modal-description"
 			>
-				<Box
-					sx={{
-						position: 'absolute',
-						top: '50%',
-						left: '50%',
-						transform: 'translate(-50%, -50%)',
-						width: 400,
-						bgcolor: 'background.paper',
-						borderRadius: '16px',
-						boxShadow: '0 8px 32px rgba(0, 0, 0, 0.12)',
-						p: 4,
-						outline: 'none',
-					}}
-				>
+				<Box sx={getModalContainerSx(isDeleteModalFullscreen, 480, '92vh')}>
+					<ModalHeaderActions
+						isFullscreen={isDeleteModalFullscreen}
+						onToggleFullscreen={() => setIsDeleteModalFullscreen((prev) => !prev)}
+						onClose={handleDeleteCancel}
+						sx={{ position: 'absolute', top: 16, right: 16, zIndex: 1 }}
+					/>
 					<Box
 						sx={{
 							display: 'flex',
@@ -882,26 +903,11 @@ const renderActions = (data: CustomCellRendererProps<ShipRow>) => {
 			{/* Documents Modal */}
 			<Modal
 				open={openDocumentsModal}
-				onClose={handleCloseDocumentsModal}
+				onClose={handleDocumentsModalClose}
 				aria-labelledby="documents-modal-title"
 				aria-describedby="documents-modal-description"
 			>
-				<Box
-					sx={{
-						position: 'absolute',
-						top: '50%',
-						left: '50%',
-						transform: 'translate(-50%, -50%)',
-						width: 700,
-						maxHeight: '80vh',
-						overflow: 'auto',
-						bgcolor: 'background.paper',
-						borderRadius: '16px',
-						boxShadow: '0 8px 32px rgba(0, 0, 0, 0.12)',
-						p: 4,
-						outline: 'none',
-					}}
-				>
+				<Box sx={getModalContainerSx(isDocumentsModalFullscreen, 880)}>
 					<Box
 						sx={{
 							display: 'flex',
@@ -920,16 +926,11 @@ const renderActions = (data: CustomCellRendererProps<ShipRow>) => {
 						>
 							{shipData.name} - Documents
 						</h2>
-						<IconButton
-							onClick={handleCloseDocumentsModal}
-							aria-label="Close"
-							size="small"
-							sx={{
-								color: 'rgba(0, 0, 0, 0.54)',
-							}}
-						>
-							<CloseIcon />
-						</IconButton>
+						<ModalHeaderActions
+							isFullscreen={isDocumentsModalFullscreen}
+							onToggleFullscreen={() => setIsDocumentsModalFullscreen((prev) => !prev)}
+							onClose={handleCloseDocumentsModal}
+						/>
 					</Box>
 
 					<Box
@@ -1007,26 +1008,11 @@ const renderActions = (data: CustomCellRendererProps<ShipRow>) => {
 			{/* Contact Info Modal */}
 			<Modal
 				open={openInfoModal}
-				onClose={handleCloseInfoModal}
+				onClose={handleInfoModalClose}
 				aria-labelledby="info-modal-title"
 				aria-describedby="info-modal-description"
 			>
-				<Box
-					sx={{
-						position: 'absolute',
-						top: '50%',
-						left: '50%',
-						transform: 'translate(-50%, -50%)',
-						width: 700,
-						maxHeight: '80vh',
-						overflow: 'auto',
-						bgcolor: 'background.paper',
-						borderRadius: '16px',
-						boxShadow: '0 8px 32px rgba(0, 0, 0, 0.12)',
-						p: 4,
-						outline: 'none',
-					}}
-				>
+				<Box sx={getModalContainerSx(isInfoModalFullscreen, 880)}>
 					<Box
 						sx={{
 							display: 'flex',
@@ -1045,16 +1031,11 @@ const renderActions = (data: CustomCellRendererProps<ShipRow>) => {
 						>
 							{shipData.name} - Contact Information
 						</h2>
-						<IconButton
-							onClick={handleCloseInfoModal}
-							aria-label="Close"
-							size="small"
-							sx={{
-								color: 'rgba(0, 0, 0, 0.54)',
-							}}
-						>
-							<CloseIcon />
-						</IconButton>
+						<ModalHeaderActions
+							isFullscreen={isInfoModalFullscreen}
+							onToggleFullscreen={() => setIsInfoModalFullscreen((prev) => !prev)}
+							onClose={handleCloseInfoModal}
+						/>
 					</Box>
 
 					<Box

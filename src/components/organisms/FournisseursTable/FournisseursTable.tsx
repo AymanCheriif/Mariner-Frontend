@@ -1,11 +1,11 @@
-import { Box, Modal, IconButton, Autocomplete, TextField } from '@mui/material';
+import { Box, Modal, Autocomplete, TextField } from '@mui/material';
 import { ColDef } from 'ag-grid-community';
 import 'ag-grid-community/styles/ag-grid.css';
 import 'ag-grid-community/styles/ag-theme-quartz.css';
 import { AgGridReact, CustomCellRendererProps } from 'ag-grid-react';
 import dayjs from 'dayjs';
 import { FC, useEffect, useMemo, useRef, useState } from 'react';
-import { AppButton, TableStateOverlay } from '~components/atoms';
+import { AppButton, ModalHeaderActions, TableStateOverlay, getModalContainerSx } from '~components/atoms';
 import { buildPdfFileName, classes, previewPdfBlobFile } from '~helpers';
 import { useGetAllFournisseurs } from '~hooks/fournisseurs';
 import { useTranslation } from '~i18n';
@@ -13,7 +13,6 @@ import { API_BASE_URL } from '~services/urls';
 import { CargoDetailsDTO } from '~services/addShip/types';
 import { FournisseurSummaryDTO } from '~services/fournisseur/types';
 import styles from './FournisseursTable.module.css';
-import CloseIcon from '@mui/icons-material/Close';
 import DownloadIcon from '@mui/icons-material/Download';
 
 interface FournisseurRow {
@@ -88,6 +87,7 @@ const mapFournisseurToRow = (dto: FournisseurSummaryDTO): FournisseurRow => {
 
 const renderFournisseurName = (data: CustomCellRendererProps<FournisseurRow>) => {
 	const [openModal, setOpenModal] = useState(false);
+	const [isFullscreen, setIsFullscreen] = useState(false);
 	const [isExportingPdf, setIsExportingPdf] = useState(false);
 	const fournisseurData = data.context.fournisseurMap.get(data.data?.fournisseurLookupKey);
 
@@ -96,7 +96,17 @@ const renderFournisseurName = (data: CustomCellRendererProps<FournisseurRow>) =>
 	};
 
 	const handleCloseModal = () => {
+		setIsFullscreen(false);
 		setOpenModal(false);
+	};
+
+	const handleModalClose = (_event: object, reason: 'backdropClick' | 'escapeKeyDown') => {
+		if (reason === 'escapeKeyDown' && isFullscreen) {
+			setIsFullscreen(false);
+			return;
+		}
+
+		handleCloseModal();
 	};
 
 	const handleExportPdf = async () => {
@@ -149,30 +159,17 @@ const renderFournisseurName = (data: CustomCellRendererProps<FournisseurRow>) =>
 				{data.value}
 			</span>
 
-			<Modal open={openModal} onClose={handleCloseModal} aria-labelledby="fournisseur-modal-title">
-				<Box
-					sx={{
-						position: 'absolute',
-						top: '50%',
-						left: '50%',
-						transform: 'translate(-50%, -50%)',
-						width: 900,
-						maxHeight: '80vh',
-						overflow: 'auto',
-						bgcolor: 'background.paper',
-						borderRadius: '16px',
-						boxShadow: '0 8px 32px rgba(0, 0, 0, 0.12)',
-						p: 4,
-						outline: 'none',
-					}}
-				>
+			<Modal open={openModal} onClose={handleModalClose} aria-labelledby="fournisseur-modal-title">
+				<Box sx={getModalContainerSx(isFullscreen, 1080)}>
 					<Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
 						<h2 id="fournisseur-modal-title" style={{ margin: 0, fontSize: '22px', fontWeight: 600 }}>
 							{fournisseurData.fournisseurName} - Cargoes
 						</h2>
-						<IconButton onClick={handleCloseModal} aria-label="Close" size="small">
-							<CloseIcon />
-						</IconButton>
+						<ModalHeaderActions
+							isFullscreen={isFullscreen}
+							onToggleFullscreen={() => setIsFullscreen((prev) => !prev)}
+							onClose={handleCloseModal}
+						/>
 					</Box>
 
 					<Box sx={{ mb: 2, p: 2, bgcolor: '#f5f5f5', borderRadius: 2 }}>

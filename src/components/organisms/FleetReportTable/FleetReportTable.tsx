@@ -4,7 +4,7 @@ import 'ag-grid-community/styles/ag-grid.css'; // Mandatory CSS required by the 
 import 'ag-grid-community/styles/ag-theme-quartz.css'; // Optional Theme applied to the grid
 import { AgGridReact, CustomCellRendererProps } from 'ag-grid-react';
 import { FC, useEffect, useMemo, useRef, useState } from 'react';
-import { AppButton, DocumentViewer } from '~components/atoms';
+import { AppButton, DocumentViewer, ModalHeaderActions, getModalContainerSx } from '~components/atoms';
 import { buildPdfFileName, classes } from '~helpers';
 import { useTranslation } from '~i18n';
 import { addShipService } from '~services/addShip';
@@ -13,7 +13,6 @@ import styles from './FleetReportTable.module.css';
 import { FleetReport } from './types';
 import DeleteIcon from '@mui/icons-material/Delete';
 import EditIcon from '@mui/icons-material/Edit';
-import CloseIcon from '@mui/icons-material/Close';
 import DescriptionIcon from '@mui/icons-material/Description';
 import InfoIcon from '@mui/icons-material/Info';
 import PhoneIcon from '@mui/icons-material/Phone';
@@ -68,6 +67,9 @@ const renderActions = (data: CustomCellRendererProps<FleetReport>) => {
 	const [openDeleteModal, setOpenDeleteModal] = useState(false);
 	const [openDocumentsModal, setOpenDocumentsModal] = useState(false);
 	const [openInfoModal, setOpenInfoModal] = useState(false);
+	const [isDeleteModalFullscreen, setIsDeleteModalFullscreen] = useState(false);
+	const [isDocumentsModalFullscreen, setIsDocumentsModalFullscreen] = useState(false);
+	const [isInfoModalFullscreen, setIsInfoModalFullscreen] = useState(false);
 
 	// We need to get the original Ship DTO data to find the id
 	const shipData = data.context.shipDtoMap.get(data.data?.id);
@@ -104,7 +106,17 @@ const renderActions = (data: CustomCellRendererProps<FleetReport>) => {
 	};
 
 	const handleDeleteCancel = () => {
+		setIsDeleteModalFullscreen(false);
 		setOpenDeleteModal(false);
+	};
+
+	const handleDeleteModalClose = (_event: object, reason: 'backdropClick' | 'escapeKeyDown') => {
+		if (reason === 'escapeKeyDown' && isDeleteModalFullscreen) {
+			setIsDeleteModalFullscreen(false);
+			return;
+		}
+
+		handleDeleteCancel();
 	};
 
 	const handleUpdate = () => {
@@ -114,19 +126,41 @@ const renderActions = (data: CustomCellRendererProps<FleetReport>) => {
 
 	const handleViewDocuments = () => {
 		// Open documents modal instead of navigating
+		setIsDocumentsModalFullscreen(false);
 		setOpenDocumentsModal(true);
 	};
 
 	const handleCloseDocumentsModal = () => {
+		setIsDocumentsModalFullscreen(false);
 		setOpenDocumentsModal(false);
 	};
 
+	const handleDocumentsModalClose = (_event: object, reason: 'backdropClick' | 'escapeKeyDown') => {
+		if (reason === 'escapeKeyDown' && isDocumentsModalFullscreen) {
+			setIsDocumentsModalFullscreen(false);
+			return;
+		}
+
+		handleCloseDocumentsModal();
+	};
+
 	const handleViewInfo = () => {
+		setIsInfoModalFullscreen(false);
 		setOpenInfoModal(true);
 	};
 
 	const handleCloseInfoModal = () => {
+		setIsInfoModalFullscreen(false);
 		setOpenInfoModal(false);
+	};
+
+	const handleInfoModalClose = (_event: object, reason: 'backdropClick' | 'escapeKeyDown') => {
+		if (reason === 'escapeKeyDown' && isInfoModalFullscreen) {
+			setIsInfoModalFullscreen(false);
+			return;
+		}
+
+		handleCloseInfoModal();
 	};
 
 	return (
@@ -234,24 +268,17 @@ const renderActions = (data: CustomCellRendererProps<FleetReport>) => {
 			{/* Confirmation Modal */}
 			<Modal
 				open={openDeleteModal}
-				onClose={handleDeleteCancel}
+				onClose={handleDeleteModalClose}
 				aria-labelledby="delete-ship-modal-title"
 				aria-describedby="delete-ship-modal-description"
 			>
-				<Box
-					sx={{
-						position: 'absolute',
-						top: '50%',
-						left: '50%',
-						transform: 'translate(-50%, -50%)',
-						width: 400,
-						bgcolor: 'background.paper',
-						borderRadius: '16px',
-						boxShadow: '0 8px 32px rgba(0, 0, 0, 0.12)',
-						p: 4,
-						outline: 'none',
-					}}
-				>
+				<Box sx={getModalContainerSx(isDeleteModalFullscreen, 480, '92vh')}>
+					<ModalHeaderActions
+						isFullscreen={isDeleteModalFullscreen}
+						onToggleFullscreen={() => setIsDeleteModalFullscreen((prev) => !prev)}
+						onClose={handleDeleteCancel}
+						sx={{ position: 'absolute', top: 16, right: 16, zIndex: 1 }}
+					/>
 					<Box
 						sx={{
 							display: 'flex',
@@ -342,26 +369,11 @@ const renderActions = (data: CustomCellRendererProps<FleetReport>) => {
 			{/* Documents Modal */}
 			<Modal
 				open={openDocumentsModal}
-				onClose={handleCloseDocumentsModal}
+				onClose={handleDocumentsModalClose}
 				aria-labelledby="documents-modal-title"
 				aria-describedby="documents-modal-description"
 			>
-				<Box
-					sx={{
-						position: 'absolute',
-						top: '50%',
-						left: '50%',
-						transform: 'translate(-50%, -50%)',
-						width: 700,
-						maxHeight: '80vh',
-						overflow: 'auto',
-						bgcolor: 'background.paper',
-						borderRadius: '16px',
-						boxShadow: '0 8px 32px rgba(0, 0, 0, 0.12)',
-						p: 4,
-						outline: 'none',
-					}}
-				>
+				<Box sx={getModalContainerSx(isDocumentsModalFullscreen, 880)}>
 					<Box
 						sx={{
 							display: 'flex',
@@ -380,16 +392,11 @@ const renderActions = (data: CustomCellRendererProps<FleetReport>) => {
 						>
 							{shipData.name} - Documents
 						</h2>
-						<IconButton
-							onClick={handleCloseDocumentsModal}
-							aria-label="Close"
-							size="small"
-							sx={{
-								color: 'rgba(0, 0, 0, 0.54)',
-							}}
-						>
-							<CloseIcon />
-						</IconButton>
+						<ModalHeaderActions
+							isFullscreen={isDocumentsModalFullscreen}
+							onToggleFullscreen={() => setIsDocumentsModalFullscreen((prev) => !prev)}
+							onClose={handleCloseDocumentsModal}
+						/>
 					</Box>
 
 					{/* Document sections */}
@@ -469,26 +476,11 @@ const renderActions = (data: CustomCellRendererProps<FleetReport>) => {
 			{/* Contact Info Modal */}
 			<Modal
 				open={openInfoModal}
-				onClose={handleCloseInfoModal}
+				onClose={handleInfoModalClose}
 				aria-labelledby="info-modal-title"
 				aria-describedby="info-modal-description"
 			>
-				<Box
-					sx={{
-						position: 'absolute',
-						top: '50%',
-						left: '50%',
-						transform: 'translate(-50%, -50%)',
-						width: 700,
-						maxHeight: '80vh',
-						overflow: 'auto',
-						bgcolor: 'background.paper',
-						borderRadius: '16px',
-						boxShadow: '0 8px 32px rgba(0, 0, 0, 0.12)',
-						p: 4,
-						outline: 'none',
-					}}
-				>
+				<Box sx={getModalContainerSx(isInfoModalFullscreen, 880)}>
 					<Box
 						sx={{
 							display: 'flex',
@@ -507,16 +499,11 @@ const renderActions = (data: CustomCellRendererProps<FleetReport>) => {
 						>
 							{shipData.name} - Contact Information
 						</h2>
-						<IconButton
-							onClick={handleCloseInfoModal}
-							aria-label="Close"
-							size="small"
-							sx={{
-								color: 'rgba(0, 0, 0, 0.54)',
-							}}
-						>
-							<CloseIcon />
-						</IconButton>
+						<ModalHeaderActions
+							isFullscreen={isInfoModalFullscreen}
+							onToggleFullscreen={() => setIsInfoModalFullscreen((prev) => !prev)}
+							onClose={handleCloseInfoModal}
+						/>
 					</Box>
 
 					{/* Contact Information sections */}
@@ -905,6 +892,7 @@ const FleetReportTable: FC = () => {
 
 	// Convert modal state
 	const [openConvertModal, setOpenConvertModal] = useState(false);
+	const [isConvertModalFullscreen, setIsConvertModalFullscreen] = useState(false);
 	const [isConverting, setIsConverting] = useState(false);
 	const [convertingShip, setConvertingShip] = useState<ShipDTO | null>(null);
 
@@ -918,13 +906,24 @@ const FleetReportTable: FC = () => {
 	const showToast = (message: string, severity: 'success' | 'error') => setToast({ open: true, message, severity });
 
 	const handleOpenConvertModal = (shipData: ShipDTO) => {
+		setIsConvertModalFullscreen(false);
 		setConvertingShip(shipData);
 		setOpenConvertModal(true);
 	};
 
 	const handleCloseConvertModal = () => {
+		setIsConvertModalFullscreen(false);
 		setOpenConvertModal(false);
 		setConvertingShip(null);
+	};
+
+	const handleConvertModalClose = (_event: object, reason: 'backdropClick' | 'escapeKeyDown') => {
+		if (reason === 'escapeKeyDown' && isConvertModalFullscreen) {
+			setIsConvertModalFullscreen(false);
+			return;
+		}
+
+		handleCloseConvertModal();
 	};
 
 	const handleConvertConfirm = async () => {
@@ -1145,23 +1144,17 @@ const FleetReportTable: FC = () => {
 			{/* Convert Fleet to Ship Confirmation Modal */}
 			<Modal
 				open={openConvertModal}
-				onClose={handleCloseConvertModal}
+				onClose={handleConvertModalClose}
 				aria-labelledby="convert-confirmation-modal-title"
 				aria-describedby="convert-confirmation-modal-description"
 			>
-				<Box
-					sx={{
-						position: 'absolute',
-						top: '50%',
-						left: '50%',
-						transform: 'translate(-50%, -50%)',
-						width: 400,
-						bgcolor: 'background.paper',
-						borderRadius: '16px',
-						boxShadow: '0 8px 32px rgba(0, 0, 0, 0.12)',
-						p: 4,
-					}}
-				>
+				<Box sx={getModalContainerSx(isConvertModalFullscreen, 480, '92vh')}>
+					<ModalHeaderActions
+						isFullscreen={isConvertModalFullscreen}
+						onToggleFullscreen={() => setIsConvertModalFullscreen((prev) => !prev)}
+						onClose={handleCloseConvertModal}
+						sx={{ position: 'absolute', top: 16, right: 16, zIndex: 1 }}
+					/>
 					<Typography
 						id="convert-confirmation-modal-title"
 						variant="h6"

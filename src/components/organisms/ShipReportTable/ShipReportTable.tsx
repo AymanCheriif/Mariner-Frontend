@@ -5,7 +5,7 @@ import 'ag-grid-community/styles/ag-theme-quartz.css'; // Optional Theme applied
 import { AgGridReact, CustomCellRendererProps } from 'ag-grid-react';
 import dayjs from 'dayjs';
 import { FC, useEffect, useMemo, useRef, useState } from 'react';
-import { AppButton, DocumentViewer } from '~components/atoms';
+import { AppButton, DocumentViewer, ModalHeaderActions, getModalContainerSx } from '~components/atoms';
 import { buildPdfFileName, classes } from '~helpers';
 import { useGetAllShips } from '~hooks';
 import { useTranslation } from '~i18n';
@@ -15,7 +15,6 @@ import styles from './ShipReportTable.module.css';
 import { ShipReport } from './types';
 import DeleteIcon from '@mui/icons-material/Delete';
 import EditIcon from '@mui/icons-material/Edit';
-import CloseIcon from '@mui/icons-material/Close';
 import DescriptionIcon from '@mui/icons-material/Description';
 import InfoIcon from '@mui/icons-material/Info';
 import PhoneIcon from '@mui/icons-material/Phone';
@@ -77,6 +76,9 @@ const renderActions = (data: CustomCellRendererProps<ShipReport>) => {
 	const [openDeleteModal, setOpenDeleteModal] = useState(false);
 	const [openDocumentsModal, setOpenDocumentsModal] = useState(false);
 	const [openInfoModal, setOpenInfoModal] = useState(false);
+	const [isDeleteModalFullscreen, setIsDeleteModalFullscreen] = useState(false);
+	const [isDocumentsModalFullscreen, setIsDocumentsModalFullscreen] = useState(false);
+	const [isInfoModalFullscreen, setIsInfoModalFullscreen] = useState(false);
 
 	// We need to get the original Ship DTO data to find the id
 	const shipData = data.context.shipDtoMap.get(data.data?.id);
@@ -113,7 +115,17 @@ const renderActions = (data: CustomCellRendererProps<ShipReport>) => {
 	};
 
 	const handleDeleteCancel = () => {
+		setIsDeleteModalFullscreen(false);
 		setOpenDeleteModal(false);
+	};
+
+	const handleDeleteModalClose = (_event: object, reason: 'backdropClick' | 'escapeKeyDown') => {
+		if (reason === 'escapeKeyDown' && isDeleteModalFullscreen) {
+			setIsDeleteModalFullscreen(false);
+			return;
+		}
+
+		handleDeleteCancel();
 	};
 
 	const handleUpdate = () => {
@@ -123,19 +135,41 @@ const renderActions = (data: CustomCellRendererProps<ShipReport>) => {
 
 	const handleViewDocuments = () => {
 		// Open documents modal instead of navigating
+		setIsDocumentsModalFullscreen(false);
 		setOpenDocumentsModal(true);
 	};
 
 	const handleCloseDocumentsModal = () => {
+		setIsDocumentsModalFullscreen(false);
 		setOpenDocumentsModal(false);
 	};
 
+	const handleDocumentsModalClose = (_event: object, reason: 'backdropClick' | 'escapeKeyDown') => {
+		if (reason === 'escapeKeyDown' && isDocumentsModalFullscreen) {
+			setIsDocumentsModalFullscreen(false);
+			return;
+		}
+
+		handleCloseDocumentsModal();
+	};
+
 	const handleViewInfo = () => {
+		setIsInfoModalFullscreen(false);
 		setOpenInfoModal(true);
 	};
 
 	const handleCloseInfoModal = () => {
+		setIsInfoModalFullscreen(false);
 		setOpenInfoModal(false);
+	};
+
+	const handleInfoModalClose = (_event: object, reason: 'backdropClick' | 'escapeKeyDown') => {
+		if (reason === 'escapeKeyDown' && isInfoModalFullscreen) {
+			setIsInfoModalFullscreen(false);
+			return;
+		}
+
+		handleCloseInfoModal();
 	};
 
 	return (
@@ -243,24 +277,17 @@ const renderActions = (data: CustomCellRendererProps<ShipReport>) => {
 			{/* Confirmation Modal */}
 			<Modal
 				open={openDeleteModal}
-				onClose={handleDeleteCancel}
+				onClose={handleDeleteModalClose}
 				aria-labelledby="delete-ship-modal-title"
 				aria-describedby="delete-ship-modal-description"
 			>
-				<Box
-					sx={{
-						position: 'absolute',
-						top: '50%',
-						left: '50%',
-						transform: 'translate(-50%, -50%)',
-						width: 400,
-						bgcolor: 'background.paper',
-						borderRadius: '16px',
-						boxShadow: '0 8px 32px rgba(0, 0, 0, 0.12)',
-						p: 4,
-						outline: 'none',
-					}}
-				>
+				<Box sx={getModalContainerSx(isDeleteModalFullscreen, 480, '92vh')}>
+					<ModalHeaderActions
+						isFullscreen={isDeleteModalFullscreen}
+						onToggleFullscreen={() => setIsDeleteModalFullscreen((prev) => !prev)}
+						onClose={handleDeleteCancel}
+						sx={{ position: 'absolute', top: 16, right: 16, zIndex: 1 }}
+					/>
 					<Box
 						sx={{
 							display: 'flex',
@@ -351,26 +378,11 @@ const renderActions = (data: CustomCellRendererProps<ShipReport>) => {
 			{/* Documents Modal */}
 			<Modal
 				open={openDocumentsModal}
-				onClose={handleCloseDocumentsModal}
+				onClose={handleDocumentsModalClose}
 				aria-labelledby="documents-modal-title"
 				aria-describedby="documents-modal-description"
 			>
-				<Box
-					sx={{
-						position: 'absolute',
-						top: '50%',
-						left: '50%',
-						transform: 'translate(-50%, -50%)',
-						width: 700,
-						maxHeight: '80vh',
-						overflow: 'auto',
-						bgcolor: 'background.paper',
-						borderRadius: '16px',
-						boxShadow: '0 8px 32px rgba(0, 0, 0, 0.12)',
-						p: 4,
-						outline: 'none',
-					}}
-				>
+				<Box sx={getModalContainerSx(isDocumentsModalFullscreen, 880)}>
 					<Box
 						sx={{
 							display: 'flex',
@@ -389,16 +401,11 @@ const renderActions = (data: CustomCellRendererProps<ShipReport>) => {
 						>
 							{shipData.name} - Documents
 						</h2>
-						<IconButton
-							onClick={handleCloseDocumentsModal}
-							aria-label="Close"
-							size="small"
-							sx={{
-								color: 'rgba(0, 0, 0, 0.54)',
-							}}
-						>
-							<CloseIcon />
-						</IconButton>
+						<ModalHeaderActions
+							isFullscreen={isDocumentsModalFullscreen}
+							onToggleFullscreen={() => setIsDocumentsModalFullscreen((prev) => !prev)}
+							onClose={handleCloseDocumentsModal}
+						/>
 					</Box>
 
 					{/* Document sections */}
@@ -478,26 +485,11 @@ const renderActions = (data: CustomCellRendererProps<ShipReport>) => {
 			{/* Contact Info Modal */}
 			<Modal
 				open={openInfoModal}
-				onClose={handleCloseInfoModal}
+				onClose={handleInfoModalClose}
 				aria-labelledby="info-modal-title"
 				aria-describedby="info-modal-description"
 			>
-				<Box
-					sx={{
-						position: 'absolute',
-						top: '50%',
-						left: '50%',
-						transform: 'translate(-50%, -50%)',
-						width: 700,
-						maxHeight: '80vh',
-						overflow: 'auto',
-						bgcolor: 'background.paper',
-						borderRadius: '16px',
-						boxShadow: '0 8px 32px rgba(0, 0, 0, 0.12)',
-						p: 4,
-						outline: 'none',
-					}}
-				>
+				<Box sx={getModalContainerSx(isInfoModalFullscreen, 880)}>
 					<Box
 						sx={{
 							display: 'flex',
@@ -516,16 +508,11 @@ const renderActions = (data: CustomCellRendererProps<ShipReport>) => {
 						>
 							{shipData.name} - Contact Information
 						</h2>
-						<IconButton
-							onClick={handleCloseInfoModal}
-							aria-label="Close"
-							size="small"
-							sx={{
-								color: 'rgba(0, 0, 0, 0.54)',
-							}}
-						>
-							<CloseIcon />
-						</IconButton>
+						<ModalHeaderActions
+							isFullscreen={isInfoModalFullscreen}
+							onToggleFullscreen={() => setIsInfoModalFullscreen((prev) => !prev)}
+							onClose={handleCloseInfoModal}
+						/>
 					</Box>
 
 					{/* Contact Information sections */}
@@ -873,16 +860,19 @@ const ShipReportTable: FC = () => {
 	// Ship details modal state
 	const [selectedShip, setSelectedShip] = useState<ShipDTO | null>(null);
 	const [shipDetailsModalOpen, setShipDetailsModalOpen] = useState(false);
+	const [isShipDetailsModalFullscreen, setIsShipDetailsModalFullscreen] = useState(false);
 
 	// Receiver details modal state
 	const [receiverDetailsModalOpen, setReceiverDetailsModalOpen] = useState(false);
 	const [receiverDetails, setReceiverDetails] = useState<{ receiverName: string; cargaisons: any[] } | null>(null);
+	const [isReceiverDetailsModalFullscreen, setIsReceiverDetailsModalFullscreen] = useState(false);
 
 	// Fournisseur details modal state (admin only)
 	const [fournisseurDetailsModalOpen, setFournisseurDetailsModalOpen] = useState(false);
 	const [fournisseurDetails, setFournisseurDetails] = useState<{ fournisseurName: string; cargaisons: any[] } | null>(
 		null
 	);
+	const [isFournisseurDetailsModalFullscreen, setIsFournisseurDetailsModalFullscreen] = useState(false);
 
 	// Global toast state for this page
 	const [toast, setToast] = useState({
@@ -987,6 +977,7 @@ const ShipReportTable: FC = () => {
 	const handleShipNameDoubleClick = (shipName: string) => {
 		const ship = data?.find((s) => s.name === shipName);
 		if (ship) {
+			setIsShipDetailsModalFullscreen(false);
 			setSelectedShip(ship);
 			setShipDetailsModalOpen(true);
 		}
@@ -994,8 +985,18 @@ const ShipReportTable: FC = () => {
 
 	// Handle closing ship details modal
 	const handleCloseShipDetailsModal = () => {
+		setIsShipDetailsModalFullscreen(false);
 		setShipDetailsModalOpen(false);
 		setSelectedShip(null);
+	};
+
+	const handleShipDetailsModalClose = (_event: object, reason: 'backdropClick' | 'escapeKeyDown') => {
+		if (reason === 'escapeKeyDown' && isShipDetailsModalFullscreen) {
+			setIsShipDetailsModalFullscreen(false);
+			return;
+		}
+
+		handleCloseShipDetailsModal();
 	};
 
 	// Handle double-click on receiver name to show receiver details
@@ -1032,13 +1033,24 @@ const ShipReportTable: FC = () => {
 				}
 			});
 		});
+		setIsReceiverDetailsModalFullscreen(false);
 		setReceiverDetails({ receiverName, cargaisons });
 		receiverDetailsModalOpen || setReceiverDetailsModalOpen(true);
 	};
 
 	const handleCloseReceiverDetailsModal = () => {
+		setIsReceiverDetailsModalFullscreen(false);
 		setReceiverDetailsModalOpen(false);
 		setReceiverDetails(null);
+	};
+
+	const handleReceiverDetailsModalClose = (_event: object, reason: 'backdropClick' | 'escapeKeyDown') => {
+		if (reason === 'escapeKeyDown' && isReceiverDetailsModalFullscreen) {
+			setIsReceiverDetailsModalFullscreen(false);
+			return;
+		}
+
+		handleCloseReceiverDetailsModal();
 	};
 
 	// Handle double-click on fournisseur name to show fournisseur details (admin only)
@@ -1080,13 +1092,24 @@ const ShipReportTable: FC = () => {
 				}
 			});
 		});
+		setIsFournisseurDetailsModalFullscreen(false);
 		setFournisseurDetails({ fournisseurName, cargaisons });
 		fournisseurDetailsModalOpen || setFournisseurDetailsModalOpen(true);
 	};
 
 	const handleCloseFournisseurDetailsModal = () => {
+		setIsFournisseurDetailsModalFullscreen(false);
 		setFournisseurDetailsModalOpen(false);
 		setFournisseurDetails(null);
+	};
+
+	const handleFournisseurDetailsModalClose = (_event: object, reason: 'backdropClick' | 'escapeKeyDown') => {
+		if (reason === 'escapeKeyDown' && isFournisseurDetailsModalFullscreen) {
+			setIsFournisseurDetailsModalFullscreen(false);
+			return;
+		}
+
+		handleCloseFournisseurDetailsModal();
 	};
 
 	const colDefs: ColDef<ShipReport>[] = useMemo(
@@ -1384,24 +1407,11 @@ const ShipReportTable: FC = () => {
 			{/* Ship Details Modal */}
 			<Modal
 				open={shipDetailsModalOpen}
-				onClose={handleCloseShipDetailsModal}
+				onClose={handleShipDetailsModalClose}
 				aria-labelledby="ship-details-modal-title"
 				aria-describedby="ship-details-modal-description"
 			>
-				<Box
-					sx={{
-						position: 'absolute',
-						top: '50%',
-						left: '50%',
-						transform: 'translate(-50%, -50%)',
-						width: 1280,
-						bgcolor: 'background.paper',
-						borderRadius: '16px',
-						boxShadow: '0 8px 32px rgba(0, 0, 0, 0.12)',
-						p: 4,
-						outline: 'none',
-					}}
-				>
+				<Box sx={getModalContainerSx(isShipDetailsModalFullscreen, 1400)}>
 					{/* Modal content for ship details */}
 					{selectedShip && (
 						<Box
@@ -1428,16 +1438,11 @@ const ShipReportTable: FC = () => {
 								>
 									Ship Details
 								</h2>
-								<IconButton
-									onClick={handleCloseShipDetailsModal}
-									aria-label="Close"
-									size="small"
-									sx={{
-										color: 'rgba(0, 0, 0, 0.54)',
-									}}
-								>
-									<CloseIcon />
-								</IconButton>
+								<ModalHeaderActions
+									isFullscreen={isShipDetailsModalFullscreen}
+									onToggleFullscreen={() => setIsShipDetailsModalFullscreen((prev) => !prev)}
+									onClose={handleCloseShipDetailsModal}
+								/>
 							</Box>
 
 							{/* Ship details fields */}
@@ -1668,40 +1673,22 @@ const ShipReportTable: FC = () => {
 			{/* Receiver Details Modal */}
 			<Modal
 				open={receiverDetailsModalOpen}
-				onClose={handleCloseReceiverDetailsModal}
+				onClose={handleReceiverDetailsModalClose}
 				aria-labelledby="receiver-details-modal-title"
 				aria-describedby="receiver-details-modal-description"
 			>
-				<Box
-					sx={{
-						position: 'absolute',
-						top: '50%',
-						left: '50%',
-						transform: 'translate(-50%, -50%)',
-						width: 1100,
-						maxHeight: '80vh',
-						overflow: 'auto',
-						bgcolor: 'background.paper',
-						borderRadius: '16px',
-						boxShadow: '0 8px 32px rgba(0, 0, 0, 0.12)',
-						p: 4,
-						outline: 'none',
-					}}
-				>
+				<Box sx={getModalContainerSx(isReceiverDetailsModalFullscreen, 1240)}>
 					{receiverDetails && (
 						<Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
 							<Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
 								<h2 id="receiver-details-modal-title" style={{ margin: 0, fontSize: '22px', fontWeight: 600 }}>
 									Receiver Details
 								</h2>
-								<IconButton
-									onClick={handleCloseReceiverDetailsModal}
-									aria-label="Close"
-									size="small"
-									sx={{ color: 'rgba(0, 0, 0, 0.54)' }}
-								>
-									<CloseIcon />
-								</IconButton>
+								<ModalHeaderActions
+									isFullscreen={isReceiverDetailsModalFullscreen}
+									onToggleFullscreen={() => setIsReceiverDetailsModalFullscreen((prev) => !prev)}
+									onClose={handleCloseReceiverDetailsModal}
+								/>
 							</Box>
 							<Box>
 								<strong>Name:</strong> {receiverDetails.receiverName}
@@ -1848,40 +1835,22 @@ const ShipReportTable: FC = () => {
 			{/* Fournisseur Details Modal (Admin Only) */}
 			<Modal
 				open={fournisseurDetailsModalOpen}
-				onClose={handleCloseFournisseurDetailsModal}
+				onClose={handleFournisseurDetailsModalClose}
 				aria-labelledby="fournisseur-details-modal-title"
 				aria-describedby="fournisseur-details-modal-description"
 			>
-				<Box
-					sx={{
-						position: 'absolute',
-						top: '50%',
-						left: '50%',
-						transform: 'translate(-50%, -50%)',
-						width: 1100,
-						maxHeight: '80vh',
-						overflow: 'auto',
-						bgcolor: 'background.paper',
-						borderRadius: '16px',
-						boxShadow: '0 8px 32px rgba(0, 0, 0, 0.12)',
-						p: 4,
-						outline: 'none',
-					}}
-				>
+				<Box sx={getModalContainerSx(isFournisseurDetailsModalFullscreen, 1240)}>
 					{fournisseurDetails && (
 						<Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
 							<Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
 								<h2 id="fournisseur-details-modal-title" style={{ margin: 0, fontSize: '22px', fontWeight: 600 }}>
 									Fournisseur Details (Admin Only)
 								</h2>
-								<IconButton
-									onClick={handleCloseFournisseurDetailsModal}
-									aria-label="Close"
-									size="small"
-									sx={{ color: 'rgba(0, 0, 0, 0.54)' }}
-								>
-									<CloseIcon />
-								</IconButton>
+								<ModalHeaderActions
+									isFullscreen={isFournisseurDetailsModalFullscreen}
+									onToggleFullscreen={() => setIsFournisseurDetailsModalFullscreen((prev) => !prev)}
+									onClose={handleCloseFournisseurDetailsModal}
+								/>
 							</Box>
 							<Box>
 								<strong>Name:</strong> {fournisseurDetails.fournisseurName}

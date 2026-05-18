@@ -1,18 +1,17 @@
-import { Box, Autocomplete, TextField, Modal, IconButton, Tooltip } from '@mui/material';
+import { Box, Autocomplete, TextField, Modal, Tooltip } from '@mui/material';
 import { ColDef } from 'ag-grid-community';
 import 'ag-grid-community/styles/ag-grid.css';
 import 'ag-grid-community/styles/ag-theme-quartz.css';
 import { AgGridReact, CustomCellRendererProps } from 'ag-grid-react';
 import dayjs from 'dayjs';
 import { FC, useMemo, useRef, useState, useEffect } from 'react';
-import { AppButton, TableStateOverlay } from '~components/atoms';
+import { AppButton, ModalHeaderActions, TableStateOverlay, getModalContainerSx } from '~components/atoms';
 import { buildPdfFileName, classes, previewPdfBlobFile } from '~helpers';
 import { useTranslation } from '~i18n';
 import { useGetAllReceivers } from '~hooks/receivers';
 import { ReceiverSummaryDTO, CargoDetailsDTO } from '~services/receivers/types';
 import styles from './ReceiversTable.module.css';
 import InfoIcon from '@mui/icons-material/Info';
-import CloseIcon from '@mui/icons-material/Close';
 import DescriptionIcon from '@mui/icons-material/Description';
 import { isUserAdmin } from '~components/organisms/Layouts/AuthenticatedLayout/AuthenticatedLayout.service';
 import { API_BASE_URL } from '~services/urls';
@@ -49,6 +48,7 @@ const mapReceiverSummaryToRow = (dto: ReceiverSummaryDTO): ReceiverRow => {
 
 const renderActions = (data: CustomCellRendererProps<ReceiverRow>) => {
 	const [openDetailsModal, setOpenDetailsModal] = useState(false);
+	const [isDetailsModalFullscreen, setIsDetailsModalFullscreen] = useState(false);
 	const [isExportingPdf, setIsExportingPdf] = useState(false);
 
 	const receiverData = data.context.receiverDtoMap.get(data.data?.receiverLookupKey);
@@ -62,7 +62,17 @@ const renderActions = (data: CustomCellRendererProps<ReceiverRow>) => {
 	};
 
 	const handleCloseDetailsModal = () => {
+		setIsDetailsModalFullscreen(false);
 		setOpenDetailsModal(false);
+	};
+
+	const handleDetailsModalClose = (_event: object, reason: 'backdropClick' | 'escapeKeyDown') => {
+		if (reason === 'escapeKeyDown' && isDetailsModalFullscreen) {
+			setIsDetailsModalFullscreen(false);
+			return;
+		}
+
+		handleCloseDetailsModal();
 	};
 
 	const handleExportPdf = async () => {
@@ -126,26 +136,11 @@ const renderActions = (data: CustomCellRendererProps<ReceiverRow>) => {
 			{/* Details Modal */}
 			<Modal
 				open={openDetailsModal}
-				onClose={handleCloseDetailsModal}
+				onClose={handleDetailsModalClose}
 				aria-labelledby="receiver-details-modal-title"
 				aria-describedby="receiver-details-modal-description"
 			>
-				<Box
-					sx={{
-						position: 'absolute',
-						top: '50%',
-						left: '50%',
-						transform: 'translate(-50%, -50%)',
-						width: 1100,
-						maxHeight: '80vh',
-						overflow: 'auto',
-						bgcolor: 'background.paper',
-						borderRadius: '16px',
-						boxShadow: '0 8px 32px rgba(0, 0, 0, 0.12)',
-						p: 4,
-						outline: 'none',
-					}}
-				>
+				<Box sx={getModalContainerSx(isDetailsModalFullscreen, 1240)}>
 					<Box
 						sx={{
 							display: 'flex',
@@ -164,16 +159,11 @@ const renderActions = (data: CustomCellRendererProps<ReceiverRow>) => {
 						>
 							{receiverData.receiverName} - Cargo Details
 						</h2>
-						<IconButton
-							onClick={handleCloseDetailsModal}
-							aria-label="Close"
-							size="small"
-							sx={{
-								color: 'rgba(0, 0, 0, 0.54)',
-							}}
-						>
-							<CloseIcon />
-						</IconButton>
+						<ModalHeaderActions
+							isFullscreen={isDetailsModalFullscreen}
+							onToggleFullscreen={() => setIsDetailsModalFullscreen((prev) => !prev)}
+							onClose={handleCloseDetailsModal}
+						/>
 					</Box>
 
 					{/* Summary Info */}

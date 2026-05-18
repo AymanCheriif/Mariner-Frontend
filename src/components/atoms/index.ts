@@ -10,6 +10,7 @@ export * from './FileInput';
 export * from './Input';
 export * from './MainHeader';
 export * from './MainSidebar';
+export * from './ModalFrame';
 export * from './ProfileBadge';
 export * from './TextArea';
 export * from './TableStateOverlay';

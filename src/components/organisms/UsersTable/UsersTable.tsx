@@ -12,7 +12,7 @@ import { CONSTANTS } from '~helpers/constants';
 import { Box, IconButton, Tooltip, Snackbar, Alert, Modal, CircularProgress } from '@mui/material';
 import DeleteIcon from '@mui/icons-material/Delete';
 import EditIcon from '@mui/icons-material/Edit';
-import { AppButton } from '~components/atoms';
+import { AppButton, ModalHeaderActions, getModalContainerSx } from '~components/atoms';
 
 interface Props {
 	onRowClick: Consumer<Undefined<UserDTO>>;
@@ -50,11 +50,13 @@ export const UsersTable: FC<Props> = ({ onRowClick }) => {
 	const handleCloseToast = () => setToast((prev) => ({ ...prev, open: false }));
 
 	const [openDeleteModal, setOpenDeleteModal] = useState(false);
+	const [isDeleteModalFullscreen, setIsDeleteModalFullscreen] = useState(false);
 	const [selectedUser, setSelectedUser] = useState<UserDTO | null>(null);
 
 	const { mutate: deleteUser, isLoading: isDeleting } = useDeleteUser(
 		() => {
 			// Close and toast on success
+			setIsDeleteModalFullscreen(false);
 			setOpenDeleteModal(false);
 			setSelectedUser(null);
 			showToast('User deleted successfully', 'success');
@@ -77,6 +79,7 @@ export const UsersTable: FC<Props> = ({ onRowClick }) => {
 		const onDelete = (e: React.MouseEvent) => {
 			e.stopPropagation();
 			setSelectedUser(user);
+			setIsDeleteModalFullscreen(false);
 			setOpenDeleteModal(true);
 		};
 		return (
@@ -113,8 +116,18 @@ export const UsersTable: FC<Props> = ({ onRowClick }) => {
 	};
 
 	const handleDeleteCancel = () => {
+		setIsDeleteModalFullscreen(false);
 		setOpenDeleteModal(false);
 		setSelectedUser(null);
+	};
+
+	const handleDeleteModalClose = (_event: object, reason: 'backdropClick' | 'escapeKeyDown') => {
+		if (reason === 'escapeKeyDown' && isDeleteModalFullscreen) {
+			setIsDeleteModalFullscreen(false);
+			return;
+		}
+
+		handleDeleteCancel();
 	};
 
 	const handleDeleteConfirm = () => {
@@ -156,24 +169,17 @@ export const UsersTable: FC<Props> = ({ onRowClick }) => {
 			{/* Delete confirmation modal (styled like Ship delete modal) */}
 			<Modal
 				open={openDeleteModal}
-				onClose={handleDeleteCancel}
+				onClose={handleDeleteModalClose}
 				aria-labelledby="delete-user-modal-title"
 				aria-describedby="delete-user-modal-description"
 			>
-				<Box
-					sx={{
-						position: 'absolute',
-						top: '50%',
-						left: '50%',
-						transform: 'translate(-50%, -50%)',
-						width: 400,
-						bgcolor: 'background.paper',
-						borderRadius: '16px',
-						boxShadow: '0 8px 32px rgba(0, 0, 0, 0.12)',
-						p: 4,
-						outline: 'none',
-					}}
-				>
+				<Box sx={getModalContainerSx(isDeleteModalFullscreen, 480, '92vh')}>
+					<ModalHeaderActions
+						isFullscreen={isDeleteModalFullscreen}
+						onToggleFullscreen={() => setIsDeleteModalFullscreen((prev) => !prev)}
+						onClose={handleDeleteCancel}
+						sx={{ position: 'absolute', top: 16, right: 16, zIndex: 1 }}
+					/>
 					<Box
 						sx={{
 							display: 'flex',

@@ -1,15 +1,14 @@
-import { Box, Modal, IconButton } from '@mui/material';
+import { Box, Modal } from '@mui/material';
 import { ColDef } from 'ag-grid-community';
 import 'ag-grid-community/styles/ag-grid.css';
 import 'ag-grid-community/styles/ag-theme-quartz.css';
 import { AgGridReact, CustomCellRendererProps } from 'ag-grid-react';
 import { FC, useEffect, useMemo, useRef, useState } from 'react';
-import { AppButton, TableStateOverlay } from '~components/atoms';
+import { AppButton, ModalHeaderActions, TableStateOverlay, getModalContainerSx } from '~components/atoms';
 import { buildPdfFileName, classes, previewPdfBlobFile } from '~helpers';
 import { API_BASE_URL } from '~services/urls';
 import { SubCategorySummaryDTO } from '~services/subcategories/types';
 import styles from './SubCategoriesTable.module.css';
-import CloseIcon from '@mui/icons-material/Close';
 
 interface SubCategoryRow {
 	subCategory: string;
@@ -27,6 +26,7 @@ const mapSubCategoryToRow = (dto: SubCategorySummaryDTO): SubCategoryRow => {
 
 const renderSubCategory = (data: CustomCellRendererProps<SubCategoryRow>) => {
 	const [openModal, setOpenModal] = useState(false);
+	const [isFullscreen, setIsFullscreen] = useState(false);
 	const [isExportingPdf, setIsExportingPdf] = useState(false);
 	const subCategoryData = data.context.subCategoryMap.get(data.data?.subCategory);
 
@@ -35,7 +35,17 @@ const renderSubCategory = (data: CustomCellRendererProps<SubCategoryRow>) => {
 	};
 
 	const handleCloseModal = () => {
+		setIsFullscreen(false);
 		setOpenModal(false);
+	};
+
+	const handleModalClose = (_event: object, reason: 'backdropClick' | 'escapeKeyDown') => {
+		if (reason === 'escapeKeyDown' && isFullscreen) {
+			setIsFullscreen(false);
+			return;
+		}
+
+		handleCloseModal();
 	};
 
 	const handleExportPdf = async () => {
@@ -84,30 +94,17 @@ const renderSubCategory = (data: CustomCellRendererProps<SubCategoryRow>) => {
 				{data.value}
 			</span>
 
-			<Modal open={openModal} onClose={handleCloseModal} aria-labelledby="subcategory-modal-title">
-				<Box
-					sx={{
-						position: 'absolute',
-						top: '50%',
-						left: '50%',
-						transform: 'translate(-50%, -50%)',
-						width: 700,
-						maxHeight: '80vh',
-						overflow: 'auto',
-						bgcolor: 'background.paper',
-						borderRadius: '16px',
-						boxShadow: '0 8px 32px rgba(0, 0, 0, 0.12)',
-						p: 4,
-						outline: 'none',
-					}}
-				>
+			<Modal open={openModal} onClose={handleModalClose} aria-labelledby="subcategory-modal-title">
+				<Box sx={getModalContainerSx(isFullscreen, 880)}>
 					<Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
 						<h2 id="subcategory-modal-title" style={{ margin: 0, fontSize: '22px', fontWeight: 600 }}>
 							{subCategoryData.subCategory} - Receivers
 						</h2>
-						<IconButton onClick={handleCloseModal} aria-label="Close" size="small">
-							<CloseIcon />
-						</IconButton>
+						<ModalHeaderActions
+							isFullscreen={isFullscreen}
+							onToggleFullscreen={() => setIsFullscreen((prev) => !prev)}
+							onClose={handleCloseModal}
+						/>
 					</Box>
 
 					<Box sx={{ mb: 2, p: 2, bgcolor: '#f5f5f5', borderRadius: 2 }}>
