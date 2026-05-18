@@ -7,5 +7,6 @@ export interface SubCategorySummaryDTO {
 	subCategory: string;
 	totalTonnage: number;
 	receivers: ReceiverTonnageDTO[];
+	latestBerthingDate?: string | null;
 }
 

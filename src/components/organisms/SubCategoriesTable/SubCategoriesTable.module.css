@@ -3,3 +3,9 @@
 	height: 100%;
 }
 
+.caption {
+	margin-bottom: 0.75rem;
+	color: var(--mui-palette-text-secondary);
+	font-size: 0.9rem;
+}
+

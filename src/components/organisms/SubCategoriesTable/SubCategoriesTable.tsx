@@ -3,6 +3,7 @@ import { ColDef } from 'ag-grid-community';
 import 'ag-grid-community/styles/ag-grid.css';
 import 'ag-grid-community/styles/ag-theme-quartz.css';
 import { AgGridReact, CustomCellRendererProps } from 'ag-grid-react';
+import dayjs from 'dayjs';
 import { FC, useEffect, useMemo, useRef, useState } from 'react';
 import { AppButton, ModalHeaderActions, TableStateOverlay, getModalContainerSx } from '~components/atoms';
 import { buildPdfFileName, classes, previewPdfBlobFile } from '~helpers';
@@ -14,13 +15,24 @@ interface SubCategoryRow {
 	subCategory: string;
 	totalTonnage: number;
 	receiverCount: number;
+	latestBerthingDate: string | null;
 }
+
+const formatDisplayDate = (value?: string | null) => {
+	if (!value) {
+		return '—';
+	}
+
+	const parsed = dayjs(value);
+	return parsed.isValid() ? parsed.format('DD/MM/YYYY') : '—';
+};
 
 const mapSubCategoryToRow = (dto: SubCategorySummaryDTO): SubCategoryRow => {
 	return {
 		subCategory: dto.subCategory,
 		totalTonnage: dto.totalTonnage,
 		receiverCount: dto.receivers.length,
+		latestBerthingDate: dto.latestBerthingDate ?? null,
 	};
 };
 
@@ -118,6 +130,11 @@ const renderSubCategory = (data: CustomCellRendererProps<SubCategoryRow>) => {
 							<strong>Total Receivers:</strong>
 							<span style={{ marginLeft: '8px' }}>{subCategoryData.receivers.length}</span>
 						</Box>
+						<Box sx={{ mt: 1 }}>
+							<strong>Latest Date:</strong>
+							<span style={{ marginLeft: '8px' }}>{formatDisplayDate(subCategoryData.latestBerthingDate)}</span>
+						</Box>
+						<Box sx={{ mt: 1, color: 'text.secondary', fontSize: '0.9rem' }}>Reporting window: last 2 years only</Box>
 					</Box>
 
 					<Box sx={{ mt: 2 }}>
@@ -285,6 +302,18 @@ export const SubCategoriesTable: FC<SubCategoriesTableProps> = ({
 				width: 300,
 			},
 			{
+				field: 'latestBerthingDate',
+				headerName: 'Latest Date',
+				width: 180,
+				headerTooltip: 'Latest berthing date from the last two years',
+				valueFormatter: (params) => formatDisplayDate(params.value),
+				comparator: (valueA, valueB) => {
+					const dateA = valueA ? dayjs(valueA).valueOf() : 0;
+					const dateB = valueB ? dayjs(valueB).valueOf() : 0;
+					return dateA - dateB;
+				},
+			},
+			{
 				field: 'totalTonnage',
 				headerName: 'Total Tonnage (MT)',
 				width: 200,
@@ -301,6 +330,7 @@ export const SubCategoriesTable: FC<SubCategoriesTableProps> = ({
 
 	return (
 		<div className={classes('ag-theme-quartz', styles.container)} style={{ height: 600, position: 'relative' }}>
+			<Box className={styles.caption}>Showing sub-category activity from the last 2 years.</Box>
 
 			<Box sx={{ display: 'flex', justifyContent: 'flex-end', mb: 2 }}>
 				<AppButton
