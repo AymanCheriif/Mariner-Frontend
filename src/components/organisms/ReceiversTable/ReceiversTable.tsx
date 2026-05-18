@@ -91,7 +91,7 @@ const renderActions = (data: CustomCellRendererProps<ReceiverRow>) => {
 			});
 			if (!response.ok) throw new Error('Failed to export PDF');
 			const blob = await response.blob();
-			previewPdfBlobFile(blob, buildPdfFileName('Receiver', [receiverData.receiverId, receiverData.receiverName, 'cargoes']));
+			previewPdfBlobFile(blob, buildPdfFileName('Receiver', [receiverData.receiverName, 'cargoes']));
 			if (data.context && data.context.showToast) {
 				data.context.showToast('PDF exported successfully', 'success');
 			}
@@ -583,14 +583,14 @@ export const ReceiversTable: FC<ReceiversTableProps> = ({
 			if (!response.ok) throw new Error('Failed to export PDF');
 
 			const blob = await response.blob();
+			const receiverExportSegments = [
+				selectedReceiver ? selectedReceiver : undefined,
+				selectedSubCategory ? `subcategory_${selectedSubCategory}` : undefined,
+				receiverIdSearch.trim() ? `receiverId_${receiverIdSearch.trim()}` : undefined,
+			];
 			previewPdfBlobFile(
 				blob,
-				buildPdfFileName('Receivers', [
-					selectedReceiver ? `receiver_${selectedReceiver}` : undefined,
-					selectedSubCategory ? `subcategory_${selectedSubCategory}` : undefined,
-					receiverIdSearch.trim() ? `receiverId_${receiverIdSearch.trim()}` : undefined,
-					`${visibleReceiverIds.length}_items`,
-				])
+				buildPdfFileName('Receivers', receiverExportSegments, 'all')
 			);
 
 			showToast('PDF exported successfully', 'success');
