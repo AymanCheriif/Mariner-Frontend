@@ -1,12 +1,43 @@
 .selectedFile {
 	display: flex;
 	align-items: center;
+	justify-content: space-between;
 	gap: 0.5rem;
 	background-color: var(--mui-palette-primary-main);
 	color: var(--mui-palette-common-white);
 	padding: 0.25rem 0.5rem;
 	border-radius: 0.25rem;
 	user-select: none;
+	min-width: 0;
+}
+
+.selectedFilesSummary {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 0.5rem;
+	background-color: var(--mui-palette-primary-main);
+	color: var(--mui-palette-common-white);
+	padding: 0.25rem 0.5rem;
+	border-radius: 0.25rem;
+	user-select: none;
+}
+
+.selectedFilesLabel {
+	font-weight: 600;
+}
+
+.fileList {
+	display: flex;
+	flex-direction: column;
+	gap: 0.5rem;
+}
+
+.fileName {
+	min-width: 0;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
 }
 
 .error {
