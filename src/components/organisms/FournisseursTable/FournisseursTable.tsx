@@ -10,9 +10,11 @@ import { buildPdfFileName, classes, previewPdfBlobFile } from '~helpers';
 import { useGetAllFournisseurs } from '~hooks/fournisseurs';
 import { useTranslation } from '~i18n';
 import { API_BASE_URL } from '~services/urls';
+import { CargoDetailsDTO } from '~services/addShip/types';
 import { FournisseurSummaryDTO } from '~services/fournisseur/types';
 import styles from './FournisseursTable.module.css';
 import CloseIcon from '@mui/icons-material/Close';
+import DownloadIcon from '@mui/icons-material/Download';
 
 interface FournisseurRow {
 	fournisseurLookupKey: string;
@@ -27,6 +29,48 @@ interface FournisseurRow {
 }
 
 const getFournisseurLookupKey = (fournisseurId?: string, fournisseurName?: string) => `${fournisseurId || ''}::${fournisseurName || ''}`;
+
+const renderInvoiceLinks = (documentIds?: string[]) => {
+	if (!documentIds || documentIds.length === 0) {
+		return <span style={{ color: '#94a3b8' }}>N/A</span>;
+	}
+
+	return (
+		<Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
+			{documentIds.map((docId, index) => (
+				<Box
+					key={docId}
+					component="a"
+					href={`${API_BASE_URL}/documents/${docId}`}
+					target="_blank"
+					rel="noopener noreferrer"
+					sx={{
+						display: 'inline-flex',
+						alignItems: 'center',
+						gap: 0.5,
+						px: 1,
+						py: 0.5,
+						borderRadius: '8px',
+						border: '1px solid #cbd5e1',
+						backgroundColor: '#f8fafc',
+						textDecoration: 'none',
+						color: '#2563eb',
+						fontSize: '12px',
+						fontWeight: 600,
+						whiteSpace: 'nowrap',
+						'&:hover': {
+							backgroundColor: '#eff6ff',
+							borderColor: '#93c5fd',
+						},
+					}}
+				>
+					<DownloadIcon sx={{ fontSize: '14px' }} />
+					<span>{`Invoice ${index + 1}`}</span>
+				</Box>
+			))}
+		</Box>
+	);
+};
 
 const mapFournisseurToRow = (dto: FournisseurSummaryDTO): FournisseurRow => {
 	return {
@@ -180,10 +224,13 @@ const renderFournisseurName = (data: CustomCellRendererProps<FournisseurRow>) =>
 										<th style={{ padding: '8px', textAlign: 'left', backgroundColor: '#f5f5f5', borderBottom: '1px solid rgba(224, 224, 224, 1)' }}>
 											Receiver
 										</th>
+										<th style={{ padding: '8px', textAlign: 'left', backgroundColor: '#f5f5f5', borderBottom: '1px solid rgba(224, 224, 224, 1)' }}>
+											Invoices
+										</th>
 									</tr>
 								</thead>
 								<tbody>
-									{fournisseurData.cargoes.map((cargo: any, idx: number) => (
+									{fournisseurData.cargoes.map((cargo: CargoDetailsDTO, idx: number) => (
 										<tr key={idx} style={{ backgroundColor: idx % 2 === 0 ? '#ffffff' : '#fafafa' }}>
 											<td style={{ padding: '8px', borderBottom: '1px solid rgba(224, 224, 224, 1)' }}>
 												{cargo.shipName || 'N/A'}
@@ -208,6 +255,9 @@ const renderFournisseurName = (data: CustomCellRendererProps<FournisseurRow>) =>
 											</td>
 											<td style={{ padding: '8px', borderBottom: '1px solid rgba(224, 224, 224, 1)' }}>
 												{cargo.receiverName || 'N/A'}
+											</td>
+											<td style={{ padding: '8px', borderBottom: '1px solid rgba(224, 224, 224, 1)' }}>
+												{renderInvoiceLinks(cargo.receiverDocuments)}
 											</td>
 										</tr>
 									))}
